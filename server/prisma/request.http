@@ -1,0 +1,109 @@
+### 🔹 Criar usuário
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "João da Silva",
+  "email": "joao.silva@empresa.com",
+  "phone": "+55 11 99999-0000",
+  "role": "solicitante"
+}
+
+###
+# 🔹 Criar usuário (gerente)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "name": "Carlos Pereira",
+  "email": "carlos.pereira@empresa.com",
+  "phone": "+55 11 97777-2222",
+  "role": "gerente"
+}
+
+
+###
+# 🔹 Listar todos usuários
+GET http://localhost:3000/api/users
+Content-Type: application/json
+
+
+###
+# 🔹 Buscar usuário por ID
+GET http://localhost:3000/api/users/9faeccb9-3cc3-4b8e-bbe1-496f6ed18295
+Content-Type: application/json
+
+###
+# 🔹 Criar um Workflow (tipo de processo)
+POST http://localhost:3000/api/workflows
+Content-Type: application/json
+
+{
+  "name": "Solicitação de Serviço",
+  "templateId": "1rJ9xK9AbCdEfGhiJKlMNopQrStUvWXyZ",
+  "definition": {
+    "steps": [
+      { "name": "Solicitação Inicial", "role": "solicitante" },
+      { "name": "Revisão Técnica", "role": "tecnico" },
+      { "name": "Aprovação Final", "role": "gerente" }
+    ],
+    "notifications": true
+  }
+}
+
+###
+# 🔹 Listar todos Workflows
+GET http://localhost:3000/api/workflows
+Content-Type: application/json
+
+###
+# 🔹 Criar Documento / Iniciar Processo
+POST http://localhost:3000/api/documents
+Content-Type: application/json
+
+{
+  "workflowId": "7d1d468d-69e6-47a1-bf2e-bfd8409aaa23",
+  "createdBy": "931da8be-74a6-479a-97e1-ddcdc8a5f91d",
+  "title": "Solicitação de manutenção elétrica - Bloco A",
+  "data": {
+    "solicitante": "João da Silva",
+    "descricao": "Troca de lâmpadas queimadas no corredor principal",
+    "data": "2025-11-07"
+  },
+  "metadata": {
+    "numero_protocolo": "2025-00123",
+    "unidade": "Engenharia Predial",
+    "prioridade": "Alta",
+    "data_solicitacao": "2025-11-07",
+    "prazo_limite": "2025-11-10"
+  }
+}
+
+###
+# 🔹 Avançar Etapa do Documento
+POST http://localhost:3000/api/documents/UUID_DO_DOCUMENTO_AQUI/advance
+Content-Type: application/json
+
+{
+  "approved": true
+}
+
+###
+# 🔹 Listar todos documentos
+GET http://localhost:3000/api/documents
+Content-Type: application/json
+
+###
+# 🔹 Atualizar metadata de um documento
+PATCH http://localhost:3000/api/documents/UUID_DO_DOCUMENTO_AQUI
+Content-Type: application/json
+
+{
+  "metadata": {
+    "numero_protocolo": "2025-00123",
+    "unidade": "Engenharia Predial",
+    "prioridade": "Média",
+    "data_solicitacao": "2025-11-07",
+    "prazo_limite": "2025-11-12"
+  }
+}

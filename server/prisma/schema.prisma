@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource workflow {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  role      String?  // ex: "solicitante", "tecnico", "gerente"
+  createdAt DateTime @default(now())
+
+  documents Document[]
+}
+
+model Workflow {
+  id          String   @id @default(uuid())
+  name        String
+  templateId  String   // ID do modelo (Google Docs ou qualquer ref)
+  folder_path String?  
+  definition  Json     // Estrutura do fluxo (steps etc.)
+  createdAt   DateTime @default(now())
+
+  documents   Document[]
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  title       String
+  workflowId  String
+  driveFileId String?  // Pode ser ID do Google Docs ou caminho do arquivo
+  data        Json?    // Dados variáveis (substituídos no template)
+  metadata    Json?    // Informações fixas do processo
+  currentStep Int       @default(0)
+  status      String    @default("draft")
+  createdBy   String
+  createdAt   DateTime  @default(now())
+
+  workflow Workflow @relation(fields: [workflowId], references: [id])
+  user     User     @relation(fields: [createdBy], references: [id])
+}

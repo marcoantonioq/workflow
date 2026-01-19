@@ -1,0 +1,32 @@
+services:
+  flow:
+    image: flow
+    container_name: flow
+    build:
+      context: .
+      dockerfile: Dockerfile
+    user: node
+    working_dir: /app
+    environment:
+      - NODE_ENV=production
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    command: npm start
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data 
+
+volumes: 
+  postgres_data:
