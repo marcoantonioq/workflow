@@ -10,30 +10,25 @@
         <q-header elevated>
           <div class="q-pa-sm q-pl-md row items-center">
             <div class="cursor-pointer non-selectable">
-              File
+              Arquivos
               <q-menu>
                 <q-list dense style="min-width: 100px">
-                  <q-item clickable v-close-popup>
-                    <q-item-section>Open...</q-item-section>
+                  <q-item to="/" clickable v-close-popup>
+                    <q-item-section>Principal</q-item-section>
                   </q-item>
-                  <q-item clickable v-close-popup>
-                    <q-item-section>New</q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item clickable v-close-popup>
-                    <q-item-section>Quit</q-item-section>
+                  <q-item to="/new" clickable v-close-popup>
+                    <q-item-section>Novo</q-item-section>
                   </q-item>
                 </q-list>
               </q-menu>
             </div>
 
             <div class="q-ml-md cursor-pointer non-selectable">
-              Edit
+              Editar
               <q-menu auto-close>
                 <q-list dense>
-                  <q-item clickable><q-item-section>Cut</q-item-section></q-item>
-                  <q-item clickable><q-item-section>Copy</q-item-section></q-item>
-                  <q-item clickable><q-item-section>Paste</q-item-section></q-item>
+                  <q-item to="/map/setores" clickable><q-item-section>Mapeamento Setores</q-item-section></q-item>
+                  <q-item to="/map/cargos" clickable><q-item-section>Mapeamento Cargos</q-item-section></q-item>
                 </q-list>
               </q-menu>
             </div>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Levantamento de Processos</title>
+<style>
+/* Reset básico e base responsiva */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 15px;
+    color: #333;
+}
+
+/* Títulos */
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+}
+
+h2 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Seções */
+.section {
+    background: #ffffff;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Labels */
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: normal;
+    color: #555;
+}
+
+/* Campos */
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+/* Etapas e blocos */
+.step,
+.block {
+    margin-top: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 12px;
+    background: #fafafa;
+}
+
+/* Cabeçalho de blocos */
+.block-header,
+.step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Hierarquia visual */
+#stepsContainer > .block {
+    border-left: 4px solid #4CAF50;
+    background: #f9fff8;
+}
+
+[id^="problemsContainer_"] .block {
+    border-left: 4px solid #f44336;
+    background: #ffffff;
+}
+
+/* Botões */
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: none;
+    font-family: inherit;
+}
+
+.add-btn {
+    background: #4CAF50;
+    color: #ffffff;
+}
+
+.remove-btn {
+    background: #f44336;
+    color: #ffffff;
+}
+
+/* Ajustes de layout para mobile */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .block-header,
+    .step-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>Formulário de Levantamento de Processos</h1>
+
+<form id="processForm">
+
+    <div class="section">
+        <h2> Responsável pelas informações</h2>
+
+        <label>Nome</label>
+        <input type="text" name="responsavel">
+
+        <label>Cargo/Função</label>
+        <input type="text" name="cargo_funcao">
+
+        <label>Matrícula</label>
+        <input type="text" name="matricula">
+
+        <label>e-mail</label>
+        <input type="text" name="e-mail">
+
+        <label>Telefone</label>
+        <input type="text" name="telefone">
+
+
+    </div>
+
+    <div class="section">
+        <h2> Identificação do Processo</h2>
+
+        <label>Nome do processo</label>
+        <input type="text" name="nome_processo" required>
+
+        <label>Descrição</label>
+        <textarea name="descricao"></textarea>
+
+        <label>Objetivo</label>
+        <textarea name="objetivo"></textarea>
+
+        <label>Setor responsável</label>
+        <input type="text" name="setor" required>
+
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;"><label>Outros setores envolvidos</label>
+        <button type="button" class="add-btn" onclick="addSector()">+</button>
+        </div>
+        <div id="sectorsContainer"></div>
+        
+    </div>
+
+    <div class="section">
+        <h2>Etapas do Processo</h2>
+
+        <div id="stepsContainer"></div>
+        <button type="button" class="add-btn" onclick="addStep()">+ Adicionar</button>
+    </div>
+
+    <div class="section">
+        <h2>Observações Gerais</h2>
+        <textarea name="observacoes"></textarea>
+    </div>
+
+    <button type="submit">Enviar formulário</button>
+</form>
+
+<script>
+let stepCount = 0;
+let issueCount = 0;
+let refCount = 0;
+let sectorCount = 0
+const steps = [];
+
+function addStep() {
+    stepCount++;
+
+    const container = document.getElementById("stepsContainer");
+
+    const div = document.createElement("div");
+    div.className = "block";
+    div.dataset.stepIndex = stepCount;
+
+    div.innerHTML = `
+        <div class="block-header">
+            <strong>Etapa ${stepCount}</strong>
+            <button type="button" class="remove-btn" onclick="this.parentElement.parentElement.remove()">
+                Remover etapa
+            </button>
+        </div>
+
+        <label>Descrição da atividade</label>
+        <textarea name="etapa_${stepCount}_descricao"></textarea>
+
+        <label>Quem executa (cargo ou setor)</label>
+        <input type="text" name="etapa_${stepCount}_executor">
+
+        <label>Sistema utilizado</label>
+        <input type="text" name="etapa_${stepCount}_sistema">
+
+        <label>Documento gerado ou utilizado</label>
+        <input type="text" name="etapa_${stepCount}_documento">
+
+
+
+        <div id="problemsContainer_${stepCount}">
+<label>Problemas e Dificuldades da Etapa</label>
+        <button 
+            type="button" 
+            class="add-btn" 
+            onclick="addProblem(${stepCount})"
+        >
+            + Adicionar problema
+        </button>
+        </div>
+    `;
+
+    container.appendChild(div);
+}
+
+function addProblem(stepIndex) {
+    const container = document.getElementById(`problemsContainer_${stepIndex}`);
+
+    const problemCount = container.children.length + 1;
+
+    const div = document.createElement("div");
+    div.className = "block";
+
+    div.innerHTML = `
+        <div class="block-header">
+            <strong>Problema ${problemCount}</strong>
+            <button 
+                type="button" 
+                class="remove-btn"
+                onclick="this.parentElement.parentElement.remove()"
+            >
+                Remover
+            </button>
+        </div>
+
+        <label>Problema identificado</label>
+        <textarea 
+            name="etapa_${stepIndex}_problema_${problemCount}"
+            placeholder="Descreva a dificuldade ou gargalo desta etapa"
+        ></textarea>
+
+        <label>Solução sugerida</label>
+        <textarea 
+            name="etapa_${stepIndex}_solucao_${problemCount}"
+            placeholder="Informe uma possível solução ou melhoria"
+        ></textarea>
+    `;
+
+    container.appendChild(div);
+}
+
+
+function removeStep(button) {
+    const block = button.closest(".block");
+    const stepId = block.dataset.stepId;
+
+    const index = steps.findIndex(s => s.id === stepId);
+    if (index > -1) steps.splice(index, 1);
+
+    block.remove();
+    updateIssueSelects();
+}
+
+function addIssue() {
+    issueCount++;
+    const container = document.getElementById("issuesContainer");
+
+    const div = document.createElement("div");
+    div.className = "block";
+
+    div.innerHTML = `
+        <div class="block-header">
+            <strong>Dificuldade / Risco ${issueCount}</strong>
+            <button type="button" class="remove-btn" onclick="this.parentElement.parentElement.remove()">Remover</button>
+        </div>
+
+        <label>Etapa relacionada</label>
+        <select name="risco_${issueCount}_etapa" class="issue-step-select"></select>
+
+        <label>Problema identificado</label>
+        <textarea name="risco_${issueCount}_problema"></textarea>
+
+        <label>Solução sugerida</label>
+        <textarea name="risco_${issueCount}_solucao"></textarea>
+    `;
+
+    container.appendChild(div);
+    updateIssueSelects();
+}
+
+function updateIssueSelects() {
+    const selects = document.querySelectorAll(".issue-step-select");
+
+    selects.forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = "";
+
+        const optionGeral = document.createElement("option");
+        optionGeral.value = "";
+        optionGeral.textContent = "Geral";
+        select.appendChild(optionGeral);
+
+        steps.forEach(step => {
+            const option = document.createElement("option");
+            option.value = step.id;
+            option.textContent = step.label;
+            select.appendChild(option);
+        });
+
+        select.value = currentValue;
+    });
+}
+
+function addReferencias() {
+    refCount++;
+    const container = document.getElementById("referenciasContainer");
+
+    const div = document.createElement("div");
+    div.className = "block";
+
+    div.innerHTML = `
+        <div class="block-header">
+            <strong>Etapa ${refCount}</strong>
+            <button type="button" class="remove-btn" onclick="this.parentElement.parentElement.remove()">Remover</button>
+        </div>
+
+        <label>Referência</label>
+        <textarea name="etapa_${refCount}_referencias"></textarea>
+
+        <label>Link</label>
+        <textarea name="etapa_${refCount}_referencias"></textarea>
+
+    `;
+    container.appendChild(div);
+}
+
+function addSector() {
+    sectorCount++;
+
+    const container = document.getElementById("sectorsContainer");
+
+    const div = document.createElement("div");
+    div.className = "block";
+
+    div.innerHTML = `
+
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+            <input 
+                type="text" 
+                name="setor_envolvido_${sectorCount}"
+                placeholder="Ex.: Almoxarifado, Compras, Financeiro"
+                style="flex: 1;"
+            >
+
+            <button 
+                type="button" 
+                class="remove-btn"
+                onclick="this.parentElement.parentElement.remove()"
+                style="margin-top: 0;"
+            >
+                Remover
+            </button>
+        </div>
+    `;
+
+    container.appendChild(div);
+}
+
+document.getElementById("processForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("Formulário preenchido com sucesso! (Envio pode ser integrado futuramente)");
+});
+</script>
+
+
+</body>
+</html>

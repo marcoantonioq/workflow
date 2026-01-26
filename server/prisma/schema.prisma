@@ -4,7 +4,6 @@ generator client {
 
 datasource workflow {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
