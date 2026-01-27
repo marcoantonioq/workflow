@@ -1,64 +1,68 @@
 <template>
-  <div class="fixed-full overflow-hidden">
-    <ClientOnly>
-      <q-layout
-        view="lHh lpr lFf"
-        container
-        style="height: 100vh"
-        class="shadow-2"
-      >
-        <q-header elevated>
-          <div class="q-pa-sm q-pl-md row items-center">
-            <div class="cursor-pointer non-selectable">
-              Arquivos
-              <q-menu>
-                <q-list dense style="min-width: 100px">
-                  <q-item to="/" clickable v-close-popup>
-                    <q-item-section>Principal</q-item-section>
-                  </q-item>
-                  <q-item to="/new" clickable v-close-popup>
-                    <q-item-section>Novo</q-item-section>
-                  </q-item>
-                </q-list>
-              </q-menu>
-            </div>
-
-            <div class="q-ml-md cursor-pointer non-selectable">
-              Editar
-              <q-menu auto-close>
-                <q-list dense>
-                  <q-item to="/map/setores" clickable><q-item-section>Mapeamento Setores</q-item-section></q-item>
-                  <q-item to="/map/cargos" clickable><q-item-section>Mapeamento Cargos</q-item-section></q-item>
-                </q-list>
-              </q-menu>
-            </div>
+  <ClientOnly>
+    <q-layout view="lHh lpr lFf" class="bg-grey-2 app-root">
+      
+      <q-header elevated class="no-print">
+        <q-toolbar class="q-py-xs">
+          <div class="cursor-pointer non-selectable q-px-md">
+            Arquivos
+            <q-menu>
+              <q-list dense style="min-width: 150px">
+                <q-item to="/" clickable v-close-popup>
+                  <q-item-section>Principal</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </div>
-        </q-header>
+          <div class="q-ml-sm cursor-pointer non-selectable q-px-md">
+            Editar
+            <q-menu auto-close>
+              <q-list dense style="min-width: 150px">
+                <q-item to="/map/setores" clickable><q-item-section>Setores</q-item-section></q-item>
+              </q-list>
+            </q-menu>
+          </div>
+        </q-toolbar>
+      </q-header>
 
-        <q-page-container class="scroll" style="height: 100vh">
-          <q-page class="q-pa-md">
-            <NuxtPage />
-          </q-page>
-        </q-page-container>
-      </q-layout>
+      <q-page-container>
+        <q-page class="q-pa-md">
+          <NuxtPage />
+        </q-page>
+      </q-page-container>
 
-      <template #fallback>
-        <div class="fullscreen flex flex-center">
-          <q-spinner-orbit color="primary" size="3em" />
-        </div>
-      </template>
-    </ClientOnly>
-  </div>
+    </q-layout>
+
+    <template #fallback>
+      <div class="fullscreen flex flex-center">
+        <q-spinner-orbit color="primary" size="3em" />
+      </div>
+    </template>
+  </ClientOnly>
 </template>
 
-<style scoped>
-/* 3. Garante que o scrollbar apareça apenas no container do layout */
-:deep(.q-layout-container > div) {
-  overflow: hidden;
+<style>
+/* FORÇA O SCROLL NO NÍVEL DO NAVEGADOR (Resolve Edge/Chrome) */
+html, body {
+  overflow-y: auto !important;
+  height: auto !important;
+  min-height: 100% !important;
 }
 
-/* Força o container de página a ser rolável se o conteúdo exceder */
-.scroll {
-  overflow-y: auto;
+/* Garante que o container do Quasar não bloqueie o scroll */
+.q-page-container {
+  overflow: visible !important;
+}
+
+.app-root {
+  min-height: 100vh;
+}
+
+/* IMPRESSÃO */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  .q-page-container { padding-top: 0 !important; }
+  .q-card { box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
 }
 </style>
