@@ -1,13 +1,25 @@
 <template>
   <q-page padding class="row justify-center bg-grey-2">
     <div class="col-12 col-sm-11 col-md-10 col-lg-9">
-      <div class="q-mb-lg">
-        <div class="text-h5 text-primary text-weight-bolder row items-center">
-          <q-icon name="account_tree" class="q-mr-sm" />
-          MAPEAMENTO IFG
+      <div class="row items-center q-mb-lg justify-between">
+        <div class="col-12 col-sm-auto">
+          <div class="text-h5 text-primary text-weight-bolder row items-center">
+            <q-icon name="account_tree" class="q-mr-sm" />
+            MAPEAMENTO IFG
+          </div>
+          <div class="text-caption text-grey-7 italic">
+            Salvamento automático ativado
+          </div>
         </div>
-        <div class="text-caption text-grey-7">
-          Os dados são salvos automaticamente no seu navegador.
+        <div class="col-12 col-sm-auto q-gutter-sm q-mt-xs-sm">
+          <q-btn
+            flat
+            color="negative"
+            icon="delete_sweep"
+            label="Limpar Tudo"
+            @click="resetGeral"
+            size="sm"
+          />
         </div>
       </div>
 
@@ -24,9 +36,9 @@
                 name="drag_indicator"
                 class="handle-fluxo cursor-pointer q-mr-sm"
               />
-              <q-toolbar-title class="text-subtitle2">
-                FLUXO #{{ fIndex + 1 }}
-              </q-toolbar-title>
+              <q-toolbar-title class="text-subtitle2 text-uppercase"
+                >Fluxo #{{ fIndex + 1 }}</q-toolbar-title
+              >
               <q-btn
                 flat
                 round
@@ -72,7 +84,9 @@
             </q-card-section>
 
             <q-card-section class="q-pt-none">
-              <div class="text-overline text-secondary q-mb-xs">ETAPAS</div>
+              <div class="text-overline text-secondary q-mb-xs">
+                Etapas e Tarefas
+              </div>
 
               <draggable
                 v-model="fluxo.etapas"
@@ -86,13 +100,13 @@
                   >
                     <div class="row q-col-gutter-xs items-center">
                       <q-icon
-                        name="reorder"
+                        name="unfold_more"
                         size="xs"
                         class="handle-etapa cursor-pointer text-grey-6 col-auto"
                       />
                       <q-input
                         v-model="etapa.nome_etapa"
-                        placeholder="Nome da Etapa"
+                        placeholder="Nome da Etapa (ex: 1. Triagem)"
                         dense
                         outlined
                         class="col-grow bg-grey-1"
@@ -103,9 +117,8 @@
                         flat
                         round
                         size="xs"
-                        color="grey-5"
+                        color="grey-4"
                         @click="fluxo.etapas.splice(eIndex, 1)"
-                        class="col-auto"
                       />
                     </div>
 
@@ -122,96 +135,104 @@
                             bordered
                             class="q-mb-xs bg-grey-1 no-border-radius"
                           >
-                            <div
-                              class="row items-center q-pa-xs q-col-gutter-xs"
-                            >
-                              <q-icon
-                                name="drag_handle"
-                                size="xs"
-                                class="handle-tarefa cursor-pointer text-grey-4 col-auto"
-                              />
-
-                              <q-input
-                                v-model="tarefa.nome"
-                                label="Tarefa"
-                                dense
-                                filled
-                                class="col-12 col-md-3"
-                                @update:model-value="
-                                  checkAutoAddTarefa(fIndex, eIndex, tIndex)
-                                "
-                              />
-                              <q-input
-                                v-model="tarefa.setor"
-                                label="Setor"
-                                dense
-                                filled
-                                class="col-6 col-md-2"
-                              />
-                              <q-input
-                                v-model="tarefa.sistemas"
-                                label="Sistema"
-                                dense
-                                filled
-                                class="col-6 col-md-2"
-                              />
-
-                              <q-expansion-item
-                                icon="tune"
-                                dense
-                                class="col-grow"
-                                header-class="q-pa-none"
+                            <div class="row no-wrap items-center">
+                              <div
+                                class="handle-tarefa cursor-pointer q-px-xs text-grey-4"
                               >
-                                <div
-                                  class="row q-col-gutter-xs q-pa-sm bg-white"
-                                >
-                                  <q-input
-                                    v-model="tarefa.insumos"
-                                    label="Insumos"
-                                    dense
-                                    outlined
-                                    class="col-12 col-md-6"
-                                  />
-                                  <q-input
-                                    v-model="tarefa.problemas"
-                                    label="Problemas"
-                                    dense
-                                    outlined
-                                    class="col-12 col-md-6"
-                                  />
-                                  <q-input
-                                    v-model="tarefa.solucoes"
-                                    label="Soluções"
-                                    dense
-                                    outlined
-                                    class="col-12 col-md-6"
-                                  />
-                                  <q-input
-                                    v-model="tarefa.prazos"
-                                    label="Prazos (horas)"
-                                    dense
-                                    outlined
-                                    class="col-12 col-md-3"
-                                  />
-                                  <q-input
-                                    v-model="tarefa.base_legal"
-                                    label="Base Legal"
-                                    dense
-                                    outlined
-                                    class="col-12 col-md-3"
-                                  />
-                                </div>
-                              </q-expansion-item>
+                                <q-icon name="drag_handle" size="xs" />
+                              </div>
 
-                              <q-btn
-                                icon="remove"
-                                flat
-                                color="negative"
-                                round
-                                size="xs"
-                                @click="etapa.tarefas.splice(tIndex, 1)"
-                                class="col-auto"
-                              />
+                              <div
+                                class="row q-col-gutter-xs q-pa-xs full-width"
+                              >
+                                <q-input
+                                  v-model="tarefa.nome"
+                                  label="Tarefa"
+                                  dense
+                                  filled
+                                  class="col-12 col-md-4"
+                                  @update:model-value="
+                                    checkAutoAddTarefa(fIndex, eIndex, tIndex)
+                                  "
+                                />
+                                <q-input
+                                  v-model="tarefa.setor"
+                                  label="Setor"
+                                  dense
+                                  filled
+                                  class="col-6 col-md-2"
+                                />
+                                <q-input
+                                  v-model="tarefa.sistemas"
+                                  label="Sistemas"
+                                  dense
+                                  filled
+                                  class="col-6 col-md-2"
+                                />
+
+                                <q-expansion-item
+                                  label="Detalhes"
+                                  dense
+                                  class="col-grow"
+                                  header-class="text-caption text-grey-7"
+                                >
+                                  <div
+                                    class="row q-col-gutter-xs q-pa-sm bg-white border-dashed"
+                                  >
+                                    <q-input
+                                      v-model="tarefa.insumos"
+                                      label="Insumos"
+                                      dense
+                                      outlined
+                                      class="col-12 col-md-6"
+                                    />
+                                    <q-input
+                                      v-model="tarefa.problemas"
+                                      label="Problemas"
+                                      dense
+                                      outlined
+                                      class="col-12 col-md-6"
+                                    />
+                                    <q-input
+                                      v-model="tarefa.solucoes"
+                                      label="Soluções"
+                                      dense
+                                      outlined
+                                      class="col-12 col-md-6"
+                                    />
+                                    <q-input
+                                      v-model="tarefa.prazos"
+                                      label="Prazos"
+                                      dense
+                                      outlined
+                                      class="col-6 col-md-3"
+                                    />
+                                    <q-input
+                                      v-model="tarefa.base_legal"
+                                      label="Base Legal"
+                                      dense
+                                      outlined
+                                      class="col-6 col-md-3"
+                                    />
+                                  </div>
+                                </q-expansion-item>
+                              </div>
+
+                              <div class="q-px-sm border-left-thin">
+                                <q-btn
+                                  icon="delete_outline"
+                                  flat
+                                  round
+                                  dense
+                                  color="negative"
+                                  size="sm"
+                                  @click="etapa.tarefas.splice(tIndex, 1)"
+                                >
+                                  <q-tooltip class="bg-negative"
+                                    >Remover Tarefa</q-tooltip
+                                  >
+                                </q-btn>
+                              </div>
                             </div>
                           </q-card>
                         </template>
@@ -226,7 +247,7 @@
       </draggable>
 
       <q-page-sticky position="bottom-right" :offset="[18, 18]">
-        <q-btn fab icon="download" color="primary" @click="exportarTudo" />
+        <q-btn fab icon="file_download" color="primary" @click="exportarTudo" />
       </q-page-sticky>
     </div>
   </q-page>
@@ -267,21 +288,19 @@ const factoryFluxo = () => ({
 
 const listaFluxos = ref([factoryFluxo()]);
 
-// AUTO-SAVE LÓGICA
 onMounted(() => {
-  const saved = localStorage.getItem("mapeamento_fluxos");
+  const saved = localStorage.getItem("mapeamento_fluxos_ifg");
   if (saved) listaFluxos.value = JSON.parse(saved);
 });
 
 watch(
   listaFluxos,
-  (newVal) => {
-    localStorage.setItem("mapeamento_fluxos", JSON.stringify(newVal));
+  (val) => {
+    localStorage.setItem("mapeamento_fluxos_ifg", JSON.stringify(val));
   },
   { deep: true },
 );
 
-// AUTO-ADD LÓGICA
 const checkAutoAddFluxo = (idx) => {
   if (
     idx === listaFluxos.value.length - 1 &&
@@ -305,12 +324,25 @@ const checkAutoAddTarefa = (fIdx, eIdx, tIdx) => {
 
 const removerFluxo = (idx) => {
   $q.dialog({
-    title: "Excluir",
-    message: "Deseja remover este fluxo?",
+    title: "Atenção",
+    message: "Excluir este fluxo e todas as etapas?",
     cancel: true,
+    persistent: true,
   }).onOk(() => {
     listaFluxos.value.splice(idx, 1);
     if (listaFluxos.value.length === 0) listaFluxos.value = [factoryFluxo()];
+  });
+};
+
+const resetGeral = () => {
+  $q.dialog({
+    title: "Limpar Tudo",
+    message: "Isso apagará todos os fluxos permanentemente. Continuar?",
+    cancel: true,
+    color: "negative",
+  }).onOk(() => {
+    listaFluxos.value = [factoryFluxo()];
+    $q.notify({ message: "Dados resetados", icon: "delete", color: "info" });
   });
 };
 
@@ -327,23 +359,40 @@ const exportarTudo = () => {
         })),
     }));
 
-  if (clean.length === 0) return $q.notify("Preencha ao menos um fluxo!");
+  if (clean.length === 0)
+    return $q.notify({ message: "Nada para exportar", color: "orange" });
   exportFile(
-    "fluxos_ifg.json",
+    "fluxos_trabalho_ifg.json",
     JSON.stringify(clean, null, 2),
     "application/json",
   );
+  $q.notify({
+    message: "JSON gerado com sucesso!",
+    color: "positive",
+    icon: "done",
+  });
 };
 </script>
 
 <style scoped>
 .border-left-accent {
-  border-left: 4px solid var(--q-secondary);
+  border-left: 5px solid var(--q-secondary);
+}
+.border-left-thin {
+  border-left: 1px solid #ddd;
+}
+.border-dashed {
+  border: 1px dashed #eee;
+  border-radius: 4px;
 }
 .ghost {
   opacity: 0.3;
+  background: #e8f5e9;
 }
 .cursor-pointer {
   cursor: grab;
+}
+.no-border-radius {
+  border-radius: 0 !important;
 }
 </style>
