@@ -9,7 +9,10 @@
             <q-menu>
               <q-list dense style="min-width: 150px">
                 <q-item to="/" clickable v-close-popup>
-                  <q-item-section>Principal</q-item-section>
+                  <q-item-section>Início</q-item-section>
+                </q-item>
+                <q-item to="/flow/create" clickable v-close-popup>
+                  <q-item-section>Mapeamento de Processos</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
