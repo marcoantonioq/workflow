@@ -6,7 +6,21 @@ export default defineNuxtConfig({
     transpile: ["quasar"],
   },
   modules: ["nuxt-quasar-ui"],
+  css: [],
   quasar: {
+    config: {
+      brand: {
+        primary: "#32a041", // Verde IFG
+        secondary: "#2f3e4e", // Cinza Azulado Escuro
+        accent: "#c0392b", // Vermelho (usado em alertas/ícones)
+        dark: "#1d1d1d",
+
+        positive: "#21BA45",
+        negative: "#c0392b",
+        info: "#31CCEC",
+        warning: "#F2C037",
+      },
+    },
     components: {
       defaults: {
         QBtn: {
