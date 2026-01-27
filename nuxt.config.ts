@@ -1,3 +1,5 @@
+import { Dialog } from "quasar";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -21,6 +23,7 @@ export default defineNuxtConfig({
         warning: "#F2C037",
       },
     },
+    plugins: ["Dialog"],
     components: {
       defaults: {
         QBtn: {
