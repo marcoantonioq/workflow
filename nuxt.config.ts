@@ -14,8 +14,8 @@ export default defineNuxtConfig({
   quasar: {
     config: {
       brand: {
-        primary: "#32a041", // Verde IFG
-        secondary: "#2f3e4e", // Cinza Azulado Escuro
+        primary: "#195128", // Verde IFG
+        secondary: "#32a041", // Cinza Azulado Escuro
         accent: "#c0392b", // Vermelho (usado em alertas/ícones)
         dark: "#1d1d1d",
 
