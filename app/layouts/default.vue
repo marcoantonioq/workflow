@@ -17,13 +17,54 @@
               </q-list>
             </q-menu>
           </div>
+
           <div class="q-ml-sm cursor-pointer non-selectable q-px-md">
             Editar
             <q-menu auto-close>
               <q-list dense style="min-width: 150px">
-                <q-item to="/map/setores" clickable><q-item-section>Setores</q-item-section></q-item>
+                <q-item to="/map/setores" clickable>
+                  <q-item-section>Setores</q-item-section>
+                </q-item>
               </q-list>
             </q-menu>
+          </div>
+
+          <q-space />
+
+          <div class="row items-center q-gutter-sm">
+            
+            <template v-if="auth.isAuthenticated.value">
+              <div class="column items-end q-mr-sm text-white">
+                <span class="text-weight-bold text-caption">
+                  {{ auth.userDetails.value?.full_name || 'Carregando...' }}
+                </span>
+                <span style="font-size: 0.7rem; opacity: 0.8">
+                  {{ auth.userDetails.value?.position?.name || 'Sessão Ativa' }}
+                </span>
+              </div>
+
+              <q-btn round flat icon="account_circle">
+                <q-menu style="min-width: 200px">
+                  <q-list>
+                    <q-item-label header>Sessão Atual</q-item-label>
+                    <q-item dense>
+                      <q-item-section avatar><q-icon name="badge" /></q-item-section>
+                      <q-item-section>
+                        <q-item-label caption>ID/Matrícula</q-item-label>
+                        <q-item-label>{{ auth.userId.value }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-separator q-my-sm />
+                    <q-item clickable v-close-popup @click="handleLogout" class="text-negative">
+                      <q-item-section avatar><q-icon name="logout" /></q-item-section>
+                      <q-item-section>Encerrar Sessão</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+            </template>
+
+            <q-btn v-else flat icon="login" label="Entrar" to="/login" />
           </div>
         </q-toolbar>
       </q-header>
@@ -44,28 +85,17 @@
   </ClientOnly>
 </template>
 
-<style>
-/* FORÇA O SCROLL NO NÍVEL DO NAVEGADOR (Resolve Edge/Chrome) */
-html, body {
-  overflow-y: auto !important;
-  height: auto !important;
-  min-height: 100% !important;
+<script setup>
+const auth = useAuth()
+
+const handleLogout = () => {
+  auth.logout()
 }
 
-/* Garante que o container do Quasar não bloqueie o scroll */
-.q-page-container {
-  overflow: visible !important;
-}
-
-.app-root {
-  min-height: 100vh;
-}
-
-/* IMPRESSÃO */
-@media print {
-  .no-print { display: none !important; }
-  body { background: white !important; }
-  .q-page-container { padding-top: 0 !important; }
-  .q-card { box-shadow: none !important; border: 1px solid #ddd !important; page-break-inside: avoid; }
-}
-</style>
+// Re-sincroniza dados do Prisma ao montar o layout (caso de Refresh)
+onMounted(async () => {
+  if (auth.userId.value && !auth.userDetails.value) {
+    await auth.fetchUserDetails()
+  }
+})
+</script>

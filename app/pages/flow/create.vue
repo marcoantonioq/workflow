@@ -62,22 +62,16 @@
         </q-card-section>
       </q-card>
 
-      <div class="q-ma-md text-right no-print">
+      <div class="q-mb-md text-right no-print">
         <q-btn
-          label="Abrir Tudo"
+          :label="todosExpandidos ? 'Fechar Tudo' : 'Abrir Tudo'"
+          :icon="todosExpandidos ? 'unfold_less' : 'unfold_more'"
           size="sm"
-          color="grey-7"
+          color="grey-8"
+          unelevated
+          @click="toggleExpansaoGlobal"
+          class="bg-white border-grey-4"
           outline
-          icon="unfold_more"
-          @click="toggleExpansaoGlobal(true)"
-        />
-        <q-btn
-          label="Fechar Tudo"
-          size="sm"
-          color="grey-7"
-          outline
-          icon="unfold_less"
-          @click="toggleExpansaoGlobal(false)"
         />
       </div>
 
@@ -112,16 +106,29 @@
                 name="drag_indicator"
                 class="handle-fluxo cursor-pointer q-mr-sm"
               />
-              <q-toolbar-title class="text-subtitle1 text-weight-bold">
-                <q-card-section v-if="!isReadOnly">
-                  {{ `FLUXO:` }}
-                  <q-input
-                    v-model="fluxo.identificacao"
-                    dense
-                    @update:model-value="garantirItensEmBranco"
-                  />
-                </q-card-section>
+              <q-toolbar-title class="row items-center no-wrap">
+                <span class="text-h6 text-weight-bold q-mr-sm">FLUXO:</span>
+
+                <q-input
+                  v-if="!isReadOnly"
+                  v-model="fluxo.identificacao"
+                  dense
+                  borderless
+                  placeholder="Novo fluxo..."
+                  class="text-h6 text-weight-bold full-width"
+                  input-class="text-white"
+                  @update:model-value="garantirItensEmBranco"
+                >
+                  <template v-slot:append>
+                    <q-icon name="edit" size="xs" color="grey-6" />
+                  </template>
+                </q-input>
+
+                <span v-else class="text-h6 text-weight-bold">
+                  {{ fluxo.identificacao }}
+                </span>
               </q-toolbar-title>
+
               <q-btn
                 flat
                 round
@@ -151,7 +158,7 @@
               <div
                 v-if="(fluxo.identificacao || isReadOnly) && fluxo.isExpanded"
               >
-                <q-card-section class="row q-col-gutter-md q-pt-none">
+                <q-card-section class="row q-col-gutter-md q-pt-none q-mt-sm">
                   <template v-if="!isReadOnly">
                     <q-input
                       v-model="fluxo.descricao"
@@ -224,7 +231,7 @@
                           >
                             {{
                               etapa.nome_etapa || isReadOnly
-                                ? `ETAPA ${eIndex + 1}`
+                                ? `ETAPA #${eIndex + 1}: `
                                 : "Nova Etapa"
                             }}
                           </div>
@@ -302,7 +309,6 @@
                                       size="xs"
                                       class="handle-tarefa cursor-pointer q-px-xs text-grey-9"
                                     />
-
                                     <div
                                       class="row q-col-gutter-sm full-width items-center"
                                     >
@@ -319,7 +325,7 @@
                                           v-model="tarefa.nome"
                                           :label="
                                             tarefa.nome
-                                              ? 'Tarefa'
+                                              ? `Tarefa #${tIndex + 1}: `
                                               : 'Nova Tarefa'
                                           "
                                           dense
@@ -519,7 +525,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from "vue";
+import { ref, watch, onMounted, nextTick, computed } from "vue";
 import draggable from "vuedraggable";
 import { exportFile, useQuasar } from "quasar";
 
@@ -567,7 +573,6 @@ const opcoesSetoresFiltradas = ref(opcoesSetoresBase);
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-// FACTORIES COM FLAG DE EXPANSÃO
 const factoryTarefa = () => ({
   id: generateId(),
   nome: "",
@@ -598,24 +603,39 @@ const factoryFluxo = () => ({
 
 const listaFluxos = ref([factoryFluxo()]);
 
-// --- IMPORTAR / LIMPAR ---
+// --- LÓGICA DO TOGGLE GLOBAL ---
+const todosExpandidos = computed(() => {
+  // Verifica se a maioria dos fluxos está aberta para decidir o estado do botão
+  if (listaFluxos.value.length === 0) return false;
+  const abertos = listaFluxos.value.filter((f) => f.isExpanded).length;
+  return abertos > listaFluxos.value.length / 2;
+});
+
+const toggleExpansaoGlobal = () => {
+  const novoEstado = !todosExpandidos.value;
+  listaFluxos.value.forEach((f) => {
+    f.isExpanded = novoEstado;
+    f.etapas.forEach((e) => {
+      e.isExpanded = novoEstado;
+    });
+  });
+};
+
+// --- RESTO DAS FUNÇÕES ---
 const triggerImport = () => fileInput.value.click();
 
 const handleImport = (event) => {
   const file = event.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
       const json = JSON.parse(e.target.result);
-      // Garante que os campos de expansão existam nos dados importados
-      const formatado = json.map((f) => ({
+      listaFluxos.value = json.map((f) => ({
         ...f,
         isExpanded: true,
         etapas: f.etapas.map((et) => ({ ...et, isExpanded: true })),
       }));
-      listaFluxos.value = formatado;
       nextTick(() => garantirItensEmBranco());
       $q.notify({ color: "positive", message: "Importação concluída!" });
     } catch (err) {
@@ -623,32 +643,20 @@ const handleImport = (event) => {
     }
   };
   reader.readAsText(file);
-  event.target.value = ""; // Reset input
+  event.target.value = "";
 };
 
 const confirmarLimparTudo = () => {
   $q.dialog({
     title: "Limpar Tudo",
-    message:
-      "Tem certeza que deseja apagar todos os fluxos? Esta ação não pode ser desfeita.",
+    message: "Tem certeza que deseja apagar todos os fluxos?",
     ok: { label: "Limpar", color: "negative", unelevated: true },
     cancel: { label: "Cancelar", flat: true },
   }).onOk(() => {
     listaFluxos.value = [factoryFluxo()];
-    $q.notify("Tudo limpo.");
   });
 };
 
-const toggleExpansaoGlobal = (estado) => {
-  listaFluxos.value.forEach((f) => {
-    f.isExpanded = estado;
-    f.etapas.forEach((e) => {
-      e.isExpanded = estado;
-    });
-  });
-};
-
-// --- RESTO DAS FUNÇÕES ORIGINAIS ---
 const filterSistemas = (val, update) => {
   update(() => {
     const needle = val.toLowerCase();
@@ -715,8 +723,8 @@ const duplicarFluxo = (i) => {
 const removerFluxo = (index) => {
   $q.dialog({
     title: "Confirmar Exclusão",
-    message: `Tem certeza que deseja apagar o Fluxo #${index + 1}?`,
-    cancel: { label: "Cancelar", color: "grey", flat: true },
+    message: `Apagar o Fluxo #${index + 1}?`,
+    cancel: true,
     ok: { label: "Apagar", color: "negative", unelevated: true },
   }).onOk(() => {
     listaFluxos.value.splice(index, 1);

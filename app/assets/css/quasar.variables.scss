@@ -1,0 +1,31 @@
+/* 1. Base Responsiva */
+html {
+  // No celular: 16px. No Desktop: cresce até 20px baseado na largura da tela.
+  font-size: clamp(16px, 1.2vw, 20px) !important;
+}
+
+/* 2. Títulos Dinâmicos */
+.text-h6 {
+  // Mínimo 1.25rem, ideal 2.5vw, máximo 1.6rem
+  font-size: clamp(1.25rem, 1.5vw, 1.6rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.text-h5 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem) !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+}
+
+/* 3. Legibilidade e Suavização */
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 4. Ajuste específico para Inputs dentro de Toolbar (Opcional) */
+.q-toolbar .q-input {
+  font-size: inherit; // Herda o tamanho dinâmico do pai
+}
