@@ -15,6 +15,8 @@ model User {
   access_role String?
   is_active   Boolean  @default(true)
   workstation String?
+  photo_url   String?
+  service_hours    String?
   created_at  DateTime @default(now())
 
   department_id String?
@@ -56,6 +58,8 @@ model Department {
   phone            String?
   responsibilities String?
   competencies     String?
+  service_hours    String?
+  faq              Json?    @default("[]")
 
   members User[]
 

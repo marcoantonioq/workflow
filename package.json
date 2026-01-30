@@ -11,6 +11,7 @@
     "postinstall": "nuxt prepare",
     "db:migrate": "npx prisma migrate dev --name init",
     "db:seed": "node prisma/seed.js",
+    "db:update": "npx prisma migrate dev --name \"`date +%Y%m%d%H%M%S`\"",
     "db:studio": "npx prisma studio"
   },
   "dependencies": {
