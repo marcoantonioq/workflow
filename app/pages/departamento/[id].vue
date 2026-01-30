@@ -11,20 +11,22 @@
         class="self-start q-mb-md"
       />
 
-      <div class="row items-end q-gutter-x-md">
-        <div class="text-h3 text-weight-bold text-grey-9">
-          {{ department.name }}
+      <template v-if="department">
+        <div class="row items-end q-gutter-x-md">
+          <div class="text-h3 text-weight-bold text-grey-9">
+            {{ department.name }}
+          </div>
+          <div class="text-h5 text-grey-6 q-pb-xs">
+            | {{ department.initials }}
+          </div>
         </div>
-        <div class="text-h5 text-grey-6 q-pb-xs">
-          | {{ department.initials }}
-        </div>
-      </div>
-      <q-separator
-        class="q-mt-sm"
-        color="primary"
-        size="2px"
-        style="width: 100px"
-      />
+        <q-separator
+          class="q-mt-sm"
+          color="primary"
+          size="2px"
+          style="width: 100px"
+        />
+      </template>
     </div>
 
     <div v-if="pending" class="flex flex-center q-pa-xl">
@@ -36,7 +38,7 @@
         <div class="text-subtitle1 text-weight-bold text-grey-8 q-mb-sm">
           Sobre o Departamento
         </div>
-        <q-card flat bordered class="rounded-borders bg-white">
+        <q-card flat bordered class="rounded-borders bg-white q-mb-lg">
           <q-card-section class="text-body1 text-grey-9 line-height-relaxed">
             <div class="q-mb-lg text-justify">
               {{
@@ -44,9 +46,7 @@
                 "As responsabilidades deste setor ainda não foram detalhadas."
               }}
             </div>
-
             <q-separator q-my-md />
-
             <div class="text-weight-bold q-mb-xs">Competências Principais:</div>
             <div class="text-grey-8">
               {{
@@ -57,7 +57,30 @@
           </q-card-section>
         </q-card>
 
-        <div class="row q-gutter-sm q-mt-lg">
+        <div v-if="department.faq && department.faq.length > 0" class="q-mb-lg">
+          <div class="text-subtitle1 text-weight-bold text-grey-8 q-mb-sm">
+            Perguntas Frequentes
+          </div>
+          <q-list bordered class="rounded-borders bg-white">
+            <q-expansion-item
+              v-for="(item, index) in department.faq"
+              :key="index"
+              group="faq_group"
+              :label="item.pergunta"
+              header-class="text-weight-bold text-grey-9"
+              expand-separator
+            >
+              <q-card>
+                <q-card-section
+                  class="text-grey-9 bg-grey-2"
+                  v-html="item.resposta"
+                />
+              </q-card>
+            </q-expansion-item>
+          </q-list>
+        </div>
+
+        <div class="row q-gutter-sm">
           <q-btn
             outline
             rounded
@@ -78,15 +101,9 @@
       </div>
 
       <div class="col-12 col-md-5">
-        <div class="row items-center justify-between q-mb-sm">
-          <div class="text-subtitle1 text-weight-bold text-grey-8">
-            Equipe do Setor
-          </div>
-          <q-badge outline color="primary"
-            >{{ department.members?.length || 0 }} Integrantes</q-badge
-          >
+        <div class="text-subtitle1 text-weight-bold text-grey-8 q-mb-sm">
+          Equipe do Setor
         </div>
-
         <q-card flat bordered class="rounded-borders bg-white">
           <q-list separator>
             <q-item
@@ -96,72 +113,65 @@
             >
               <q-item-section avatar>
                 <q-avatar color="primary" text-color="white" shadow-1>
-                  {{ member.full_name.charAt(0).toUpperCase() }}
+                  <img
+                    v-if="member.photo_url"
+                    :src="member.photo_url"
+                    style="object-fit: cover"
+                  />
+                  <template v-else>
+                    {{ member.full_name?.charAt(0).toUpperCase() }}
+                  </template>
                 </q-avatar>
               </q-item-section>
 
               <q-item-section>
-                <q-item-label class="text-weight-bold text-grey-9">
-                  {{ member.full_name }}
-                </q-item-label>
+                <q-item-label class="text-weight-bold text-grey-9">{{
+                  member.full_name
+                }}</q-item-label>
                 <q-item-label caption class="text-primary text-weight-medium">
                   {{ member.position?.name || "Membro" }}
                 </q-item-label>
               </q-item-section>
-
-              <q-item-section side>
-                <q-btn flat round dense icon="contact_mail" color="grey-5">
-                  <q-tooltip>Ver contato</q-tooltip>
-                </q-btn>
-              </q-item-section>
-            </q-item>
-
-            <q-item
-              v-if="!department.members?.length"
-              class="text-center text-grey-6 q-pa-md"
-            >
-              Nenhum membro vinculado a este departamento.
             </q-item>
           </q-list>
         </q-card>
 
         <q-card flat bordered class="q-mt-md rounded-borders bg-blue-grey-1">
-          <q-card-section class="q-py-sm">
+          <q-card-section class="q-py-md">
             <div class="text-subtitle2 text-grey-9 q-mb-sm row items-center">
-              <q-icon name="info" color="primary" class="q-mr-xs" />
-              Informações de Atendimento
+              <q-icon name="schedule" color="primary" class="q-mr-xs" />
+              Horário de Atendimento
+            </div>
+            <div class="text-body2 text-grey-8">
+              {{ department.service_hours || "Não informado" }}
             </div>
 
+            <q-separator class="q-my-md" />
+
             <div class="column q-gutter-y-xs">
-              <div class="row items-center text-body2 text-grey-8">
-                <q-icon
-                  name="schedule"
-                  size="xs"
-                  color="primary"
-                  class="q-mr-sm"
-                />
-                <span class="text-weight-medium q-mr-xs">Horário:</span>
-                {{ department.service_hours || "Não informado" }}
-              </div>
-
               <div
+                class="row items-center text-caption text-grey-7"
                 v-if="department.email"
-                class="row items-center text-body2 text-grey-8"
               >
-                <q-icon name="mail" size="xs" color="primary" class="q-mr-sm" />
-                <span class="text-weight-medium q-mr-xs">E-mail:</span>
-                {{ department.email || "Não informado" }}
+                <q-icon name="mail" size="14px" class="q-mr-xs" />
+                {{ department.email }}
               </div>
-
-              <div class="row items-center text-body2 text-grey-8">
-                <q-icon name="call" size="xs" color="primary" class="q-mr-sm" />
-                <span class="text-weight-medium q-mr-xs">Telefone:</span>
-                {{ department.phone || "Não informado" }}
+              <div
+                class="row items-center text-caption text-grey-7"
+                v-if="department.phone"
+              >
+                <q-icon name="phone" size="14px" class="q-mr-xs" />
+                {{ department.phone }}
               </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
+    </div>
+
+    <div v-else class="text-center q-pa-xl text-grey-7">
+      <q-icon name="error_outline" size="lg" />
+      <p>Departamento não encontrado.</p>
     </div>
   </q-page>
 </template>
@@ -174,18 +184,3 @@ const { data: department, pending } = await useFetch(
   `/api/department/${route.params.id}`,
 );
 </script>
-
-<style scoped>
-.rounded-borders {
-  border-radius: 12px;
-}
-
-.line-height-relaxed {
-  line-height: 1.6;
-}
-
-.text-justify {
-  text-align: justify;
-  text-justify: inter-word;
-}
-</style>
