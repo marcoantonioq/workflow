@@ -1,25 +1,22 @@
 export const useAuth = () => {
-  // O cookie "user_id" será acessível tanto no cliente quanto no servidor
-  const userId = useCookie('user_id', { maxAge: 60 * 60 * 24 * 7 }) // 7 dias
+  const userId = useCookie('user_id')
   const userDetails = useState('user_details', () => null)
 
-  const login = async (idDaMatricula) => {
-    // Salvamos apenas o ID no cookie
-    userId.value = idDaMatricula
-    // Buscamos os dados completos do Prisma imediatamente
-    await fetchUserDetails()
-    return navigateTo('/')
+  const fetchUserDetails = async () => {
+    if (!userId.value) return
+    try {
+      const data = await $fetch(`/api/user/${userId.value}`)
+      userDetails.value = data
+    } catch (e) {
+      console.error("Erro ao buscar usuário:", e)
+      logout() 
+    }
   }
 
-  const fetchUserDetails = async () => {
-    if (userId.value) {
-      try {
-        const data = await $fetch(`/api/user/${userId.value}`)
-        userDetails.value = data
-      } catch (e) {
-        logout()
-      }
-    }
+  const login = async (id) => {
+    userId.value = id
+    await fetchUserDetails()
+    return navigateTo('/')
   }
 
   const logout = () => {
@@ -33,6 +30,7 @@ export const useAuth = () => {
     userDetails,
     login,
     logout,
+    fetchUserDetails, 
     isAuthenticated: computed(() => !!userId.value)
   }
 }
