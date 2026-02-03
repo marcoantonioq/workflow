@@ -13,7 +13,7 @@
             Editar
             <q-menu auto-close>
               <q-list dense style="min-width: 150px">
-                <q-item to="/flow/create" clickable v-close-popup>
+                <q-item to="/workflow/create" clickable v-close-popup>
                   <q-item-section>Mapeamento de Processos</q-item-section>
                 </q-item>
                 <q-item to="/map/setores" clickable>

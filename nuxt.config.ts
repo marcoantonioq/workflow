@@ -24,6 +24,7 @@ export default defineNuxtConfig({
         info: "#31CCEC",
         warning: "#F2C037",
       },
+      notify: {},
     },
     extras: {
       font: "roboto-font",

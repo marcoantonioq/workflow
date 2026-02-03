@@ -20,7 +20,7 @@ model User {
   created_at  DateTime @default(now())
 
   department_id String?
-  department    Department? @relation(fields: [department_id], references: [id])
+  department    Department? @relation(fields: [department_id], references: [uorg_code])
 
   position_id String?
   position    Position? @relation(fields: [position_id], references: [id])
@@ -35,12 +35,15 @@ model Workflow {
   title       String
   description String?
   objectives  String?
-  documents   Json    @default("[]")
-  structure   Json    @default("[]")
+  documents   Json?    @default("[]")
+  structure   Json?    @default("[]")
   sort_order  Int     @default(0)
 
   user_id String
   author  User   @relation(fields: [user_id], references: [id])
+
+  department_id String
+  department  Department  @relation(fields: [department_id], references: [uorg_code])
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -50,8 +53,8 @@ model Workflow {
 }
 
 model Department {
-  id               String  @id @default(uuid())
-  uorg_code        String  @unique
+  uorg_code        String  @id
+  parent_code      String?
   initials         String
   name             String
   email            String?
@@ -60,8 +63,13 @@ model Department {
   competencies     String?
   service_hours    String?
   faq              Json?    @default("[]")
+  documents        Json?    @default("[]")
 
   members User[]
+  workflows Workflow[]
+
+  parent           Department?  @relation("DepartmentHierarchy", fields: [parent_code], references: [uorg_code])
+  children         Department[] @relation("DepartmentHierarchy")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

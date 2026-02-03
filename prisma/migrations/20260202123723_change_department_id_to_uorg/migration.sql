@@ -7,6 +7,8 @@ CREATE TABLE "users" (
     "access_role" TEXT,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "workstation" TEXT,
+    "photo_url" TEXT,
+    "service_hours" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "department_id" TEXT,
     "position_id" TEXT,
@@ -24,6 +26,7 @@ CREATE TABLE "workflows" (
     "structure" JSONB NOT NULL DEFAULT '[]',
     "sort_order" INTEGER NOT NULL DEFAULT 0,
     "user_id" TEXT NOT NULL,
+    "department_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -32,7 +35,6 @@ CREATE TABLE "workflows" (
 
 -- CreateTable
 CREATE TABLE "departments" (
-    "id" TEXT NOT NULL,
     "uorg_code" TEXT NOT NULL,
     "initials" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -40,10 +42,12 @@ CREATE TABLE "departments" (
     "phone" TEXT,
     "responsibilities" TEXT,
     "competencies" TEXT,
+    "service_hours" TEXT,
+    "faq" JSONB DEFAULT '[]',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "departments_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "departments_pkey" PRIMARY KEY ("uorg_code")
 );
 
 -- CreateTable
@@ -65,14 +69,14 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 -- CreateIndex
 CREATE INDEX "workflows_title_idx" ON "workflows"("title");
 
--- CreateIndex
-CREATE UNIQUE INDEX "departments_uorg_code_key" ON "departments"("uorg_code");
-
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "departments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "departments"("uorg_code") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_position_id_fkey" FOREIGN KEY ("position_id") REFERENCES "positions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "workflows" ADD CONSTRAINT "workflows_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "workflows" ADD CONSTRAINT "workflows_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "departments"("uorg_code") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,11 +1,16 @@
 <template>
   <q-page class="q-pa-md">
     <div v-if="auth.isAuthenticated.value" class="q-mb-lg">
-      <q-card flat bordered class="rounded-borders bg-white">
+      <q-card flat bordered class="rounded-borders bg-white shadow-1">
         <q-card-section class="q-pa-md">
           <div class="row items-center q-col-gutter-md">
             <div class="col-12 col-sm-auto flex justify-center">
-              <q-avatar size="64px" color="primary" text-color="white" shadow-1>
+              <q-avatar
+                size="64px"
+                color="primary"
+                text-color="white"
+                class="shadow-1"
+              >
                 {{ auth.userDetails.value?.full_name?.charAt(0).toUpperCase() }}
               </q-avatar>
             </div>
@@ -24,33 +29,61 @@
               </div>
             </div>
 
+            
             <div class="col-12 col-sm-auto flex justify-center justify-sm-end">
-              <q-chip
-                color="blue-1"
-                text-color="blue-9"
-                icon="domain"
-                class="text-weight-bold q-ma-none"
-              >
-                {{ auth.userDetails.value?.department?.name || "Geral" }}
-              </q-chip>
-              {{ auth.userDetails.value?.department?.competencies }}
-            </div>
-
+  <q-chip
+    clickable
+    color="blue-1"
+    text-color="blue-9"
+    icon="domain"
+    class="text-weight-bold department-chip"
+    @click="navigateTo(`/department/${auth.userDetails.value?.department?.uorg_code}`)"
+  >
+    <div class="ellipsis-2-lines text-wrap" style="max-width: 250px; line-height: 1.2;">
+      {{ auth.userDetails.value?.department?.name || "Geral" }}
+    </div>
+    
+    <q-tooltip v-if="auth.userDetails.value?.department?.name">
+      Ir para {{ auth.userDetails.value?.department?.name }}
+    </q-tooltip>
+  </q-chip>
+</div>
           </div>
         </q-card-section>
       </q-card>
     </div>
 
-    <div class="row q-col-gutter-md">
-      <div class="col-12 row items-center justify-between">
-        <div class="text-h6">Explorar Outros Setores</div>
-        <q-badge color="grey-7"
-          >{{ departments?.length || 0 }} setores encontrados</q-badge
+    <div class="row q-col-gutter-md q-mb-lg">
+      <div class="col-12">
+        <q-input
+          v-model="searchQuery"
+          filled
+          bg-color="white"
+          placeholder="Busque por setor, colaborador, processo ou palavra-chave..."
+          hint="A busca percorre nomes, fluxos, documentos e membros"
+          debounce="500"
+          clearable
         >
+          <template v-slot:prepend>
+            <q-icon name="search" color="primary" />
+          </template>
+          <template v-slot:append v-if="pending">
+            <q-spinner color="primary" size="xs" />
+          </template>
+        </q-input>
+      </div>
+    </div>
+
+    <div class="row q-col-gutter-md">
+      <div class="col-12 row items-center justify-between q-mb-sm">
+        <div class="text-h6 text-grey-8">Setores </div>
+        <q-badge color="primary" outline class="q-pa-xs">
+          {{ departments?.length || 0 }} resultado(s)
+        </q-badge>
       </div>
 
-      <template v-if="pending">
-        <div v-for="n in 4" :key="n" class="col-12 col-sm-6 col-md-3">
+      <template v-if="pending && !departments">
+        <div v-for="n in 8" :key="n" class="col-12 col-sm-6 col-md-3">
           <q-card flat bordered>
             <q-item>
               <q-item-section avatar
@@ -65,30 +98,59 @@
       <template v-else>
         <div
           v-for="dept in departments"
-          :key="dept.id"
+          :key="dept.uorg_code"
           class="col-12 col-sm-6 col-md-3"
         >
           <q-card
             flat
             bordered
-            class="hover-card cursor-pointer"
-            @click="navigateTo(`/departamento/${dept.id}`)"
+            class="hover-card cursor-pointer full-height"
+            @click="navigateTo(`/department/${dept.uorg_code}`)"
           >
-            <q-card-section class="row items-center no-wrap">
-              <q-avatar
-                icon="account_tree"
-                color="blue-1"
-                text-color="blue-8"
-                size="md"
-              />
-              <div class="q-ml-md">
-                <div class="text-weight-bold">{{ dept.name }}</div>
-                <div class="text-caption text-grey-7">
-                  Clique para ver detalhes
+            <q-card-section>
+              <div class="row items-center no-wrap">
+                <q-avatar
+                  icon="business"
+                  color="blue-1"
+                  text-color="blue-8"
+                  size="md"
+                />
+                <div class="q-ml-md">
+                  <div class="text-weight-bold text-blue-grey-9 line-height-1">
+                    {{ dept.name}}
+                  </div>
+                  <div class="text-caption text-grey-7">{{ dept.initials }}</div>
                 </div>
               </div>
             </q-card-section>
+
+            <q-separator inset />
+
+            <q-card-section class="q-py-xs">
+              <div class="text-caption text-grey-6 row items-center">
+                <q-icon name="people" size="14px" class="q-mr-xs" />
+                {{ dept._count?.members || 0 }} membros
+                <q-icon
+                  name="account_tree"
+                  size="14px"
+                  class="q-ml-md q-mr-xs"
+                />
+                {{ dept._count?.workflows || 0 }} fluxos
+              </div>
+            </q-card-section>
           </q-card>
+        </div>
+
+        <div
+          v-if="departments?.length === 0"
+          class="col-12 flex flex-center q-pa-xl"
+        >
+          <div class="text-center text-grey-6">
+            <q-icon name="search_off" size="64px" />
+            <div class="text-h6 q-mt-md">
+              Nenhum setor encontrado para "{{ searchQuery }}"
+            </div>
+          </div>
         </div>
       </template>
     </div>
@@ -97,32 +159,42 @@
 
 <script setup>
 const auth = useAuth();
+const searchQuery = ref("");
 
-// Busca os setores usando o hook nativo do Nuxt
-const { data: departments, pending } = await useFetch("/api/departments");
+// useFetch reativo: sempre que searchQuery mudar, ele refaz a chamada
+const { data: departments, pending } = await useFetch("/api/departments", {
+  query: { search: searchQuery },
+  watch: [searchQuery],
+});
 </script>
 
 <style scoped>
 .hover-card {
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: all 0.3s ease;
+  border-radius: 12px;
 }
 .hover-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
   border-color: var(--q-primary);
 }
-
-.rounded-borders {
-  border-radius: 12px;
-}
-.rounded-borders {
-  border-radius: 12px;
-}
-.border-grey {
-  border: 1px solid #e0e0e0;
-}
 .line-height-1 {
-  line-height: 1.2;
-}</style>
+  line-height: 1.1;
+  margin-bottom: 2px;
+}
+.department-chip {
+  height: auto !important; 
+  padding: 8px 12px;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.department-chip:hover {
+  background-color: #e3f2fd !important; 
+  transform: scale(1.02);
+}
+
+.text-wrap {
+  white-space: normal; 
+  word-wrap: break-word;
+}
+</style>

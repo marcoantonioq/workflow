@@ -1,6 +1,6 @@
 # 📋 FluxForm – Documentação de Processos
 
-Aplicação web para **levantamento e documentação de processos institucionais**, permitindo o cadastro dinâmico de etapas, problemas, riscos e links associados.
+Aplicação web para **levantamento e documentação de processos institucionais**, permitindo o cadastro dinâmico de etapas, riscos e links associados.
 
 O projeto utiliza **Docker e Docker Compose**, garantindo simplicidade na execução e padronização do ambiente.
 
