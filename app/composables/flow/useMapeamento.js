@@ -136,35 +136,42 @@ export function useMapeamento() {
     // Converte a estrutura UI para o formato esperado pelo backend
     return fluxos
       .filter((f) => f.identificacao && f.department_id)
-      .map((f) => ({
-        id: f.id,
-        identificacao: f.identificacao,
-        title: f.identificacao,
-        department_id: f.department_id,
-        descricao: f.descricao ?? '',
-        objetivos: f.objetivos ?? '',
-        documentos: f.documentos ?? '',
-        structure: {
-          etapas: (f.etapas || []).map((e) => ({
-            id: e.id,
-            nome_etapa: e.nome_etapa ?? '',
-            isExpanded: e.isExpanded ?? true,
-            tarefas: (e.tarefas || []).map((t) => ({
-              id: t.id,
-              title: t.title ?? '',
-              description: t.description ?? '',
-              setores: t.setores ?? [],
-              sistemas: t.sistemas ?? [],
-              expand: t.expand ?? false,
-              _minimized: t._minimized ?? false,
-              deadline_minutes: t.deadline_minutes ?? 0,
-              insumos: t.insumos ?? '',
-              riscos: t.riscos ?? '',
-              solucoes: t.solucoes ?? '',
-            })),
+      .map((f) => {
+        const etapasArr = (f.etapas || []).map((e) => ({
+          id: e.id,
+          nome_etapa: e.nome_etapa ?? '',
+          isExpanded: e.isExpanded ?? true,
+          tarefas: (e.tarefas || []).map((t) => ({
+            id: t.id,
+            title: t.title ?? '',
+            description: t.description ?? '',
+            setores: t.setores ?? [],
+            sistemas: t.sistemas ?? [],
+            expand: t.expand ?? false,
+            _minimized: t._minimized ?? false,
+            deadline_minutes: t.deadline_minutes ?? 0,
+            insumos: t.insumos ?? '',
+            riscos: t.riscos ?? '',
+            solucoes: t.solucoes ?? '',
           })),
-        },
-      }));
+        }));
+
+        return {
+          id: f.id,
+          identificacao: f.identificacao,
+          title: f.identificacao,
+          department_id: f.department_id,
+          descricao: f.descricao ?? '',
+          objetivos: f.objetivos ?? '',
+          documentos: f.documentos ?? '',
+          // enviar também no nível superior porque o endpoint atual usa fluxo.etapas
+          etapas: etapasArr,
+          structure: {
+            etapas: etapasArr,
+            isExpanded: f.isExpanded ?? true,
+          },
+        };
+      });
   };
 
   /* Helpers para manipular elementos sem expor detalhes de implementação
@@ -294,6 +301,7 @@ export function useMapeamento() {
     estaCarregando.value = true;
     try {
       const data = await $fetch('/api/workflows', { method: 'GET' });
+      console.log("Workflows carregados:", data);
       if (data && Array.isArray(data) && data.length > 0) {
         listaFluxos.value = data.map((w) => normalizeBackendWorkflow(w));
         // garante ids únicos para itens que venham sem id

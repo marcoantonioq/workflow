@@ -72,8 +72,10 @@
       </q-header>
 
       <q-page-container>
-        <q-page class="q-pa-md">
-          <NuxtPage />
+        <q-page class="q-pa-md max-width-container">
+          <div class="max-width-container ">
+            <NuxtPage />
+          </div>
         </q-page>
       </q-page-container>
     </q-layout>
@@ -102,6 +104,10 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+.max-width-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
 .q-router-link--exact-active {
   font-weight: bold;
