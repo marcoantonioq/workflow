@@ -59,7 +59,7 @@
           v-model="searchQuery"
           filled
           bg-color="white"
-          placeholder="Busque por setor, colaborador, processo ou palavra-chave..."
+          placeholder="Busque por setor, servidores, processo ou palavra-chave..."
           hint="A busca percorre nomes, fluxos, documentos e membros"
           debounce="500"
           clearable
@@ -74,9 +74,67 @@
       </div>
     </div>
 
+    <!-- Membros encontrados -->
+    <div v-if="searchQuery && filteredMembers.length > 0" class="q-mb-lg">
+      <div class="row q-col-gutter-md q-mb-md">
+        <div class="col-12 row items-center justify-between q-mb-sm">
+          <div class="text-h6 text-grey-8">Servidores</div>
+          <q-badge color="info" outline class="q-pa-xs">
+            {{ filteredMembers.length }} resultado(s)
+          </q-badge>
+        </div>
+
+        <div
+          v-for="member in filteredMembers"
+          :key="member.id"
+          class="col-12 col-sm-6 col-md-4"
+        >
+          <q-card
+            flat
+            bordered
+            class="hover-card-member cursor-pointer full-height"
+            @click="navigateTo(`/members/profile/${member.id}`)"
+          >
+            <q-card-section>
+              <div class="row items-center no-wrap">
+                <q-avatar
+                  :text-color="getAvatarColor(member.full_name)"
+                  :color="`${getAvatarColor(member.id)}-1`"
+                  size="md"
+                >
+                  {{ member.full_name?.charAt(0).toUpperCase() }}
+                </q-avatar>
+                <div class="q-ml-md col">
+                  <div class="text-weight-bold text-blue-grey-9 ellipsis">
+                    {{ member.full_name }}
+                  </div>
+                  <div class="text-caption text-grey-6 ellipsis">
+                    {{ member?.position?.name || "Cargo não definido" }}
+                  </div>
+                  <div class="text-caption text-primary q-mt-xs">
+                    {{ member?.department_id || "Sem departamento" }}
+                  </div>
+                </div>
+              </div>
+            </q-card-section>
+
+            <q-separator inset />
+
+            <q-card-section class="q-py-xs">
+              <div class="text-caption text-grey-6">
+                <q-icon name="badge" size="12px" class="q-mr-xs" />
+                Matrícula: {{ member.id.substring(0, 8).toUpperCase() }}
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </div>
+
+    <!-- Departamentos -->
     <div class="row q-col-gutter-md">
       <div class="col-12 row items-center justify-between q-mb-sm">
-        <div class="text-h6 text-grey-8">Setores </div>
+        <div class="text-h6 text-grey-8">Setores</div>
         <q-badge color="primary" outline class="q-pa-xs">
           {{ departments?.length || 0 }} resultado(s)
         </q-badge>
@@ -161,19 +219,50 @@
 const auth = useAuth();
 const searchQuery = ref("");
 
-// useFetch reativo: sempre que searchQuery mudar, ele refaz a chamada
 const { data: departments, pending } = await useFetch("/api/departments", {
   query: { search: searchQuery },
   watch: [searchQuery],
 });
+
+const filteredMembers = computed(() => {
+  if (!departments.value || !searchQuery.value) return [];
+  
+  const members = new Map();
+  
+  departments.value.forEach((dept) => {
+    if (dept.members && Array.isArray(dept.members)) {
+      dept.members.forEach((member) => {
+        const searchLower = searchQuery.value.toLowerCase();
+        if (
+          member.full_name?.toLowerCase().includes(searchLower) ||
+          member.position?.name?.toLowerCase().includes(searchLower)
+        ) {
+          if (!members.has(member.id)) {
+            members.set(member.id, member);
+          }
+        }
+      });
+    }
+  });
+  
+  return Array.from(members.values());
+});
+
+const getAvatarColor = (id) => {
+  const colors = ["blue", "teal", "green", "purple", "orange", "red", "cyan"];
+  const hash = id.charCodeAt(0) + id.charCodeAt(id.length - 1);
+  return colors[hash % colors.length];
+};
 </script>
 
 <style scoped>
-.hover-card {
+.hover-card,
+.hover-card-member {
   transition: all 0.3s ease;
   border-radius: 12px;
 }
-.hover-card:hover {
+.hover-card:hover,
+.hover-card-member:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
   border-color: var(--q-primary);
@@ -196,5 +285,11 @@ const { data: departments, pending } = await useFetch("/api/departments", {
 .text-wrap {
   white-space: normal; 
   word-wrap: break-word;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
