@@ -1,7 +1,7 @@
 <template>
   <ClientOnly>
     <q-layout view="lHh lpr lFf" class="bg-grey-2 app-root">
-      <q-header elevated class="no-print">
+      <!-- <q-header elevated class="no-print">
         <q-toolbar class="q-py-xs">
           <div class="cursor-pointer non-selectable q-px-md">
             <q-item to="/" clickable v-close-popup>
@@ -69,7 +69,7 @@
             <q-btn v-else flat icon="login" label="Entrar" to="/login" />
           </div>
         </q-toolbar>
-      </q-header>
+      </q-header> -->
 
       <q-page-container>
         <q-page class="q-pa-md max-width-container">

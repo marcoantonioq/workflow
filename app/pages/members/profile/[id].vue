@@ -1,16 +1,15 @@
 <template>
   <q-page class="q-pa-md">
     <!-- Header com voltar -->
-    <div class="q-mb-lg">
       <q-btn
         flat
-        round
         dense
+        color="primary"
         icon="arrow_back"
-        @click="navigateTo(-1)"
-        class="q-mb-md"
+        label="Voltar"
+        @click="router.back()"
+        class="self-start q-mb-md"
       />
-    </div>
 
     <!-- Loading -->
     <div v-if="pending" class="row q-col-gutter-md">
@@ -126,7 +125,7 @@
               </div>
               <div class="col-12 col-sm-6">
                 <div class="text-caption text-grey-6 text-weight-bold q-mb-xs">
-                  ESTAÇÃO DE TRABALHO
+                  LOCAL DE TRABALHO
                 </div>
                 <div class="text-subtitle2">
                   {{ member.workstation || "Não informado" }}
@@ -181,10 +180,10 @@
             <div class="row items-center justify-between">
               <div>
                 <div class="text-caption text-grey-6 text-weight-bold">
-                  CADASTRO NO SISTEMA
+                  Início na Instituição
                 </div>
                 <div class="text-subtitle2">
-                  {{ formatDate(member.created_at) }}
+                  {{ formatDate(member?.dt_exercicio) }}
                 </div>
               </div>
               <q-icon name="calendar_today" size="32px" color="grey-4" />
@@ -206,6 +205,7 @@
 
 <script setup>
 const route = useRoute();
+const router = useRouter();
 const memberId = route.params.id;
 
 const { data: member, pending } = await useFetch(`/api/members/${memberId}`);

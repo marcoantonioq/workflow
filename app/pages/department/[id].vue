@@ -60,7 +60,9 @@
               <q-item
                 v-for="member in department.members"
                 :key="member.id"
-                class="q-py-md"
+                class="q-py-md cursor-pointer hover-item"
+                clickable
+                @click="navigateTo(`/members/profile/${member.id}`)"
               >
                 <q-item-section avatar>
                   <q-avatar color="primary" text-color="white">
@@ -83,6 +85,7 @@
                       target="_blank"
                       rel="noopener"
                       class="text-primary"
+                      @click.stop
                     >
                       Telefone: {{ member.phone }}
                     </a>
@@ -93,10 +96,14 @@
                       target="_blank"
                       rel="noopener"
                       class="text-primary"
+                      @click.stop
                     >
                       E-mail: {{ member.mail }}
                     </a>
                   </q-item-label>
+                </q-item-section>
+                <q-item-section side>
+                  <q-icon name="arrow_forward" color="primary" />
                 </q-item-section>
               </q-item>
             </q-list>
@@ -466,14 +473,17 @@ async function handleUploadDoc() {
     const currentDocs = Array.isArray(department.value.documents)
       ? [...department.value.documents]
       : [];
-    department.value.documents = [res.document, ...currentDocs];
+    const novoDoc = { title: formDoc.value.title, url: res.url };
+
+    // Atualiza o estado com o novo documento
+    department.value.documents = [...currentDocs, novoDoc];
     syncState();
 
     formDoc.value = { title: "", url: "" };
     showDocForm.value = false;
-    $q.notify({ color: "positive", message: "Documento adicionado!" });
+    $q.notify({ color: "positive", message: "Documento enviado!" });
   } catch (e) {
-    $q.notify({ color: "negative", message: "Erro ao salvar documento." });
+    $q.notify({ color: "negative", message: "Erro ao enviar documento." });
   } finally {
     uploading.value = false;
   }
@@ -482,23 +492,34 @@ async function handleUploadDoc() {
 async function handleRemoveDoc(url) {
   $q.dialog({
     title: "Confirmar",
-    message: "Remover este link?",
+    message: "Excluir este documento?",
     cancel: true,
   }).onOk(async () => {
     try {
-      await $fetch(`/api/department/${route.params.id}/document`, {
-        method: "DELETE",
-        body: { url },
+      const novoDocs = department.value.documents.filter(
+        (doc) => doc.url !== url
+      );
+      await $fetch(`/api/department/${route.params.id}/documents`, {
+        method: "PUT",
+        body: { documents: novoDocs },
       });
 
-      department.value.documents = department.value.documents.filter(
-        (d) => d.url !== url,
-      );
+      department.value.documents = novoDocs;
       syncState();
       $q.notify({ color: "info", message: "Documento removido." });
     } catch (e) {
-      $q.notify({ color: "negative", message: "Erro ao remover." });
+      $q.notify({ color: "negative", message: "Erro ao excluir documento." });
     }
   });
 }
 </script>
+
+<style scoped>
+.hover-item {
+  transition: background-color 0.2s ease;
+}
+
+.hover-item:hover {
+  background-color: rgba(33, 150, 243, 0.05);
+}
+</style>

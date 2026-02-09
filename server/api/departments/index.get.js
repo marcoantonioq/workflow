@@ -21,6 +21,14 @@ export default defineEventHandler(async (event) => {
           position: true
         }
       },
+      workflows: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          objectives: true
+        }
+      },
       _count: {
         select: { members: true, workflows: true }
       }

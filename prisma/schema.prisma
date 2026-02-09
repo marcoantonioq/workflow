@@ -16,6 +16,7 @@ model User {
   is_active   Boolean  @default(true)
   workstation String?
   photo_url   String?
+  dt_exercicio  DateTime?
   service_hours    String?
   created_at  DateTime @default(now())
 

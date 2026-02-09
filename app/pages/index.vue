@@ -29,25 +29,31 @@
               </div>
             </div>
 
-            
             <div class="col-12 col-sm-auto flex justify-center justify-sm-end">
-  <q-chip
-    clickable
-    color="blue-1"
-    text-color="blue-9"
-    icon="domain"
-    class="text-weight-bold department-chip"
-    @click="navigateTo(`/department/${auth.userDetails.value?.department?.uorg_code}`)"
-  >
-    <div class="ellipsis-2-lines text-wrap" style="max-width: 250px; line-height: 1.2;">
-      {{ auth.userDetails.value?.department?.name || "Geral" }}
-    </div>
-    
-    <q-tooltip v-if="auth.userDetails.value?.department?.name">
-      Ir para {{ auth.userDetails.value?.department?.name }}
-    </q-tooltip>
-  </q-chip>
-</div>
+              <q-chip
+                clickable
+                color="blue-1"
+                text-color="blue-9"
+                icon="domain"
+                class="text-weight-bold department-chip"
+                @click="
+                  navigateTo(
+                    `/department/${auth.userDetails.value?.department?.uorg_code}`,
+                  )
+                "
+              >
+                <div
+                  class="ellipsis-2-lines text-wrap"
+                  style="max-width: 250px; line-height: 1.2"
+                >
+                  {{ auth.userDetails.value?.department?.name || "Geral" }}
+                </div>
+
+                <q-tooltip v-if="auth.userDetails.value?.department?.name">
+                  Ir para {{ auth.userDetails.value?.department?.name }}
+                </q-tooltip>
+              </q-chip>
+            </div>
           </div>
         </q-card-section>
       </q-card>
@@ -59,7 +65,7 @@
           v-model="searchQuery"
           filled
           bg-color="white"
-          placeholder="Busque por setor, servidores, processo ou palavra-chave..."
+          placeholder="Pesquisar setores, servidores, processo..."
           hint="A busca percorre nomes, fluxos, documentos e membros"
           debounce="500"
           clearable
@@ -131,6 +137,48 @@
       </div>
     </div>
 
+    <!-- Fluxos encontrados -->
+    <div v-if="searchQuery && filteredWorkflows.length > 0" class="q-mb-lg">
+      <div class="row q-col-gutter-md q-mb-md">
+        <div class="col-12 row items-center justify-between q-mb-sm">
+          <div class="text-h6 text-grey-8">Fluxos</div>
+          <q-badge color="secondary" outline class="q-pa-xs">
+            {{ filteredWorkflows.length }} resultado(s)
+          </q-badge>
+        </div>
+
+        <div
+          v-for="wf in filteredWorkflows"
+          :key="wf.id"
+          class="col-12 col-sm-6 col-md-4"
+        >
+          <q-card
+            flat
+            bordered
+            class="hover-card cursor-pointer full-height"
+            @click="navigateTo(`/workflow/${wf.id}`)"
+          >
+            <q-card-section>
+              <div class="row items-center no-wrap">
+                <q-avatar icon="device_hub" color="teal-1" text-color="teal-9" size="md" />
+                <div class="q-ml-md col">
+                  <div class="text-weight-bold text-blue-grey-9 ellipsis">
+                    {{ wf.title }}
+                  </div>
+                  <div class="text-caption text-grey-6 ellipsis">
+                    {{ wf.description || wf.objectives || 'Sem descrição' }}
+                  </div>
+                  <div class="text-caption text-primary q-mt-xs">
+                    {{ wf.departmentName }}
+                  </div>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </div>
+    </div>
+
     <!-- Departamentos -->
     <div class="row q-col-gutter-md">
       <div class="col-12 row items-center justify-between q-mb-sm">
@@ -175,9 +223,11 @@
                 />
                 <div class="q-ml-md">
                   <div class="text-weight-bold text-blue-grey-9 line-height-1">
-                    {{ dept.name}}
+                    {{ dept.name }}
                   </div>
-                  <div class="text-caption text-grey-7">{{ dept.initials }}</div>
+                  <div class="text-caption text-grey-7">
+                    {{ dept.initials }}
+                  </div>
                 </div>
               </div>
             </q-card-section>
@@ -226,9 +276,9 @@ const { data: departments, pending } = await useFetch("/api/departments", {
 
 const filteredMembers = computed(() => {
   if (!departments.value || !searchQuery.value) return [];
-  
+
   const members = new Map();
-  
+
   departments.value.forEach((dept) => {
     if (dept.members && Array.isArray(dept.members)) {
       dept.members.forEach((member) => {
@@ -244,8 +294,30 @@ const filteredMembers = computed(() => {
       });
     }
   });
-  
+
   return Array.from(members.values());
+});
+
+const filteredWorkflows = computed(() => {
+  if (!departments.value || !searchQuery.value) return [];
+  const map = new Map();
+  const s = searchQuery.value.toLowerCase();
+  departments.value.forEach((dept) => {
+    if (dept.workflows && Array.isArray(dept.workflows)) {
+      dept.workflows.forEach((wf) => {
+        if (
+          (wf.title && wf.title.toLowerCase().includes(s)) ||
+          (wf.description && wf.description.toLowerCase().includes(s)) ||
+          (wf.objectives && wf.objectives.toLowerCase().includes(s))
+        ) {
+          if (!map.has(wf.id)) {
+            map.set(wf.id, { ...wf, departmentName: dept.name, departmentId: dept.uorg_code });
+          }
+        }
+      });
+    }
+  });
+  return Array.from(map.values());
 });
 
 const getAvatarColor = (id) => {
@@ -272,18 +344,20 @@ const getAvatarColor = (id) => {
   margin-bottom: 2px;
 }
 .department-chip {
-  height: auto !important; 
+  height: auto !important;
   padding: 8px 12px;
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
 }
 
 .department-chip:hover {
-  background-color: #e3f2fd !important; 
+  background-color: #e3f2fd !important;
   transform: scale(1.02);
 }
 
 .text-wrap {
-  white-space: normal; 
+  white-space: normal;
   word-wrap: break-word;
 }
 
