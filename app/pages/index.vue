@@ -110,11 +110,11 @@
                 >
                   {{ member.full_name?.charAt(0).toUpperCase() }}
                 </q-avatar>
-                <div class="q-ml-md col">
-                  <div class="text-weight-bold text-blue-grey-9 ellipsis">
+                <div class="q-ml-md col card-content">
+                  <div class="text-weight-bold text-blue-grey-9 ">
                     {{ member.full_name }}
                   </div>
-                  <div class="text-caption text-grey-6 ellipsis">
+                  <div class="text-caption">
                     {{ member?.position?.name || "Cargo não definido" }}
                   </div>
                   <div class="text-caption text-primary q-mt-xs">
@@ -161,11 +161,11 @@
             <q-card-section>
               <div class="row items-center no-wrap">
                 <q-avatar icon="device_hub" color="teal-1" text-color="teal-9" size="md" />
-                <div class="q-ml-md col">
-                  <div class="text-weight-bold text-blue-grey-9 ellipsis">
+                <div class="q-ml-md col card-content">
+                  <div class="text-weight-bold text-blue-grey-9 ">
                     {{ wf.title }}
                   </div>
-                  <div class="text-caption text-grey-6 ellipsis">
+                  <div class="text-caption">
                     {{ wf.description || wf.objectives || 'Sem descrição' }}
                   </div>
                   <div class="text-caption text-primary q-mt-xs">
@@ -222,7 +222,7 @@
                   size="md"
                 />
                 <div class="q-ml-md">
-                  <div class="text-weight-bold text-blue-grey-9 line-height-1">
+                  <div class="text-weight-bold text-blue-grey-9 line-height-1 ellipsis-2-lines">
                     {{ dept.name }}
                   </div>
                   <div class="text-caption text-grey-7">
@@ -365,5 +365,26 @@ const getAvatarColor = (id) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* permite truncamento com 2 linhas */
+.ellipsis-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* garante que colunas internas em flex possam encolher e permitir truncamento */
+.card-content {
+  min-width: 0;
+}
+
+/* maior distribuição em telas grandes */
+.col-12.col-sm-6.col-md-4.col-lg-3 {
+  /* deixado para possíveis futuras classes; uso de col-lg via template se necessário */
 }
 </style>

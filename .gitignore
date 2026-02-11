@@ -23,4 +23,5 @@ logs
 .env.*
 !.env.example
 
-/prisma/*.csv
+/prisma/data/*.csv
+/prisma/data/**/*.csv

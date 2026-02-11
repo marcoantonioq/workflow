@@ -19,16 +19,13 @@ services:
   app:
     build:
       context: .
-      target: deps 
-    container_name: workflow_app_dev
-    command: npm run dev
-    volumes:
-      - .:/app 
-      - /app/node_modules 
+      target: runner 
+    container_name: workflow_app_prod
+    restart: always
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DATABASE_URL: postgresql://${DB_USER:-admin}:${DB_PASSWORD:-pass123}@db:5432/${DB_NAME:-workflow}
     depends_on:
       db:

@@ -56,11 +56,11 @@
             Equipe do Setor
           </div>
           <q-card flat bordered class="rounded-borders bg-white">
-            <q-list separator>
+            <q-list separator class="team-list">
               <q-item
                 v-for="member in department.members"
                 :key="member.id"
-                class="q-py-md cursor-pointer hover-item"
+                class="q-py-md cursor-pointer hover-item team-item"
                 clickable
                 @click="navigateTo(`/members/profile/${member.id}`)"
               >
@@ -72,11 +72,11 @@
                     }}</template>
                   </q-avatar>
                 </q-item-section>
-                <q-item-section>
-                  <q-item-label class="text-weight-bold text-grey-9">{{
+                <q-item-section class="member-content">
+                  <q-item-label class="text-weight-bold text-grey-9 ellipsis-2-lines">{{
                     member.full_name
                   }}</q-item-label>
-                  <q-item-label caption class="text-primary">{{
+                  <q-item-label caption class="text-primary ellipsis-2-lines">{{
                     member.position?.name || "Membro"
                   }}</q-item-label>
                   <q-item-label caption v-if="member.phone">
@@ -521,5 +521,19 @@ async function handleRemoveDoc(url) {
 
 .hover-item:hover {
   background-color: rgba(33, 150, 243, 0.05);
+}
+
+.team-item .member-content {
+  min-width: 0;
+}
+
+.ellipsis-2-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 </style>

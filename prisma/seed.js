@@ -1,98 +1,107 @@
-import { PrismaClient } from '@prisma/client';
-import { readFile } from 'fs/promises';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { readFile, readdir, rename } from 'fs/promises';
 import { join } from 'path';
 import { parse } from 'csv-parse/sync';
 
 const prisma = new PrismaClient();
+const DATA_DIR = join(process.cwd(), 'prisma', 'data');
+const PREFIX = 'imported_';
 
-const readCsv = async (file) => {
-  const path = join(process.cwd(), 'prisma', file);
-  const content = await readFile(path, 'utf-8');
-  return parse(content, { 
-    columns: true, 
-    skip_empty_lines: true, 
-    trim: true, 
-    bom: true 
-  });
+/**
+ * Converte valores baseado nos metadados reais do Prisma
+ */
+const castValue = (val, field) => {
+  if ([null, undefined, '', 'NULL'].includes(val)) return null;
+
+  switch (field.type) {
+    case 'Boolean':  return String(val).toLowerCase().trim() === 'true';
+    case 'Int':      return parseInt(val, 10);
+    case 'Float':
+    case 'Decimal':  return parseFloat(val);
+    case 'DateTime': 
+      const iso = String(val).replace(' ', 'T');
+      return new Date(iso).toISOString();
+    case 'Json':
+      try { return JSON.parse(val); } catch { return val; }
+    default:         return String(val);
+  }
 };
+
+async function processFile(file, modelName, dmmf) {
+  const filePath = join(DATA_DIR, file);
+  const rows = parse(await readFile(filePath, 'utf-8'), {
+    columns: true, skip_empty_lines: true, trim: true, bom: true
+  });
+
+  // Obtém metadados do modelo específico
+  const modelMeta = dmmf.datamodel.models.find(m => m.name === modelName);
+  const fieldMap = modelMeta.fields.reduce((acc, f) => ({ ...acc, [f.name]: f }), {});
+  
+  let successCount = 0;
+  let hasError = false;
+
+  console.log(`⏳ [${file}] -> Sincronizando ${modelName}...`);
+
+  for (const row of rows) {
+    const firstCol = Object.keys(row)[0];
+    const idValue = String(row.id || row[firstCol]).trim();
+    const data = {};
+
+    Object.entries(row).forEach(([col, val]) => {
+      if (fieldMap[col]) data[col] = castValue(val, fieldMap[col]);
+    });
+
+    try {
+      const modelClient = prisma[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
+      await modelClient.upsert({
+        where: { [row.id ? 'id' : firstCol]: idValue },
+        update: data,
+        create: data,
+      });
+      successCount++;
+    } catch (err) {
+      console.error(`  ❌ Erro no ID ${idValue}: ${err.message}`);
+      hasError = true;
+    }
+  }
+
+  if (!hasError) {
+    await rename(filePath, join(DATA_DIR, `${PREFIX}${file}`));
+    console.log(`  ✅ Concluído: ${successCount} registros.`);
+  }
+}
 
 async function main() {
   try {
-    console.log('⏳ Importando setores...');
-    const setoresRows = await readCsv('setores.csv');
-    const siglasValidas = new Set();
+    await prisma.$connect();
+    
+    // Acessa o DMMF de forma segura
+    const dmmf = Prisma.dmmf;
+    const files = await readdir(DATA_DIR);
+    const prismaModels = dmmf.datamodel.models.map(m => m.name);
 
-    for (const row of setoresRows) {
-      const sigla = row['Setor Sigla'];
-      if (!sigla) continue;
+    const pending = files
+      .filter(f => f.endsWith('.csv') && !f.startsWith(PREFIX))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
-      // Mapeamento explícito das colunas do CSV para o Prisma
-      const sectorData = {
-        name: row['Setor'],
-        email: row['E-mail'] || null,
-        // CARREGANDO A COLUNA DE COMPETÊNCIAS AQUI:
-        competencies: row['Responsabilidades e Competências do Setor'] || null,
-        initials: sigla,
-      };
+    if (!pending.length) return console.log('ℹ️ Sem novos arquivos para processar.');
 
-      await prisma.department.upsert({
-        where: { uorg_code: sigla },
-        update: sectorData,
-        create: { 
-          uorg_code: sigla,
-          ...sectorData 
-        },
+    for (const file of pending) {
+      const slug = file.replace(/^\d+\./, '').replace('.csv', '').toLowerCase();
+      // Busca o modelo ignorando case e plural
+      const model = prismaModels.find(m => {
+        const mLow = m.toLowerCase();
+        return mLow === slug || `${mLow}s` === slug;
       });
-      siglasValidas.add(sigla);
-    }
-    console.log(`✅ ${siglasValidas.size} setores atualizados (competências inclusas).`);
 
-    console.log('⏳ Importando servidores e cargos...');
-    const servidoresRows = await readCsv('servidores.csv');
-    let sucessos = 0;
-
-    for (const row of servidoresRows) {
-      const id = row['Matrícula'];
-      const nome = row['Nome'];
-      const nomeCargo = row['Cargo'];
-      const siglaSetor = row['Setor Sigla'];
-
-      if (!id || !nome) continue;
-
-      // Tratamento manual para Position (evitando erro de constraint Unique)
-      let positionId = null;
-      if (nomeCargo) {
-        let cargoDb = await prisma.position.findFirst({ where: { name: nomeCargo } });
-        if (!cargoDb) {
-          cargoDb = await prisma.position.create({ data: { name: nomeCargo } });
-        }
-        positionId = cargoDb.id;
+      if (model) {
+        await processFile(file, model, dmmf);
+      } else {
+        console.warn(`⚠️ Arquivo ${file} não mapeado para modelos: ${prismaModels.join(', ')}`);
       }
-
-      const userData = {
-        full_name: nome,
-        email: row['E-mail para Contato'] || null,
-        workstation: row['Funções'] || null,
-        department: siglasValidas.has(siglaSetor) 
-          ? { connect: { uorg_code: siglaSetor } } 
-          : undefined,
-        position: positionId 
-          ? { connect: { id: positionId } } 
-          : undefined,
-      };
-
-      await prisma.user.upsert({
-        where: { id },
-        update: userData,
-        create: { id, ...userData },
-      });
-      
-      sucessos++;
     }
-
-    console.log(`✅ ${sucessos} servidores processados com sucesso!`);
-  } catch (error) {
-    console.error('❌ Erro durante a execução do seed:', error);
+  } catch (err) {
+    console.error('❌ Erro Crítico:', err);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

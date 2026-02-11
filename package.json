@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
-    "start": "chmod +x /app/start.sh && /app/start.sh",
+    "dev": "npm run db:generate && nuxt dev",
+    "start": "node .output/server/index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "db:migrate": "npx prisma migrate dev --name init",
-    "db:seed": "node prisma/seed.js",
+    "db:generate": "npx prisma generate",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:seed": "npx prisma db seed",
     "db:update": "npx prisma migrate dev --name \"`date +%Y%m%d%H%M%S`\"",
     "db:studio": "npx prisma studio"
   },
@@ -31,6 +32,7 @@
     "sass-embedded": "^1.97.0"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma"
+    "schema": "prisma/schema.prisma",
+    "seed": "node prisma/seed.js"
   }
 }

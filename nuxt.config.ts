@@ -3,8 +3,17 @@ export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
   devServer: {
-    port: 8080,
+    port: 3000,
     host: "0.0.0.0",
+  },
+  routeRules: {
+    "/**": {
+      cors: true,
+      headers: {
+        "Access-Control-Allow-Origin": "https://flow.goias.ifg.edu.br",
+        "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+      },
+    },
   },
   build: {
     transpile: ["quasar"],

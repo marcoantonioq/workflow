@@ -1,10 +1,25 @@
-FROM node:22-slim
-
-# RUN apt-get update && apt-get install -y ca-certificates fonts-liberation libasound2 libnss3 libx11-xcb1 libxcomposite1 libxrandr2 libgtk-3-0 libgbm-dev libappindicator3-1 xdg-utils chromium git \
-#   && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-USER node
+FROM node:20-alpine AS base
 
 WORKDIR /app
+RUN apk add --no-cache postgresql-client
+COPY package*.json ./
 
+# Estágio de Dependências
+FROM base AS deps
+RUN npm install
+
+# Estágio de Build (Produção)
+FROM deps AS builder
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+# Estágio Final (Produção)
+FROM base AS runner
+ENV NODE_ENV=production
+COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/node_modules ./node_modules 
+
+USER node
 EXPOSE 3000
+CMD ["node", ".output/server/index.mjs"]

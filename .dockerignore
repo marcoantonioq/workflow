@@ -1,0 +1,26 @@
+# Dependências e Builds
+*.log
+
+# Docker e Configurações de Ambiente
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Git e Documentação
+.git
+.gitignore
+README.md
+LICENSE
+
+# Cache e Logs do Sistema
+.pnpm-store
+.npm
+.cache
+.DS_Store
+Thumbs.db
+
+# Testes e Ferramentas
+tests/
+vitest.config.*
+.vscode/
+.idea/
