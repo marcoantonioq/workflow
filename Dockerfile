@@ -18,12 +18,13 @@ RUN npm run build
 # Estágio Final (Produção)
 FROM base AS runner
 WORKDIR /app
-RUN chown -R node:node /app
-USER node
+ENV NODE_ENV=production
 COPY --from=builder /app/.output /app/.output
 COPY --from=builder /app/prisma /app/prisma
 COPY --from=builder /app/package.json /app/package.json
-ENV NODE_ENV=production
 RUN npm install --only=production
+USER root
+RUN chown -R node:node /app
+USER node
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
