@@ -1,11 +1,12 @@
 FROM node:20-alpine AS base
-
-WORKDIR /app
 RUN apk add --no-cache postgresql-client
-COPY package*.json ./
 
 # Estágio de Dependências
 FROM base AS deps
+RUN mkdir -p /app
+WORKDIR /app
+COPY package*.json ./
+RUN chown -R node:node /app
 RUN npm install
 
 # Estágio de Build (Produção)
@@ -16,10 +17,13 @@ RUN npm run build
 
 # Estágio Final (Produção)
 FROM base AS runner
-ENV NODE_ENV=production
-COPY --from=builder /app/.output ./.output
-COPY --from=builder /app/node_modules ./node_modules 
-
+WORKDIR /app
+RUN chown -R node:node /app
 USER node
+COPY --from=builder /app/.output /app/.output
+COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/package.json /app/package.json
+ENV NODE_ENV=production
+RUN npm install --only=production
 EXPOSE 3000
 CMD ["node", ".output/server/index.mjs"]
