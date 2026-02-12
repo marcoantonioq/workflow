@@ -1,390 +1,232 @@
 <template>
-  <q-page class="q-pa-md">
-    <div v-if="auth.isAuthenticated.value" class="q-mb-lg">
-      <q-card flat bordered class="rounded-borders bg-white shadow-1">
-        <q-card-section class="q-pa-md">
-          <div class="row items-center q-col-gutter-md">
-            <div class="col-12 col-sm-auto flex justify-center">
-              <q-avatar
-                size="64px"
-                color="primary"
-                text-color="white"
-                class="shadow-1"
-              >
-                {{ auth.userDetails.value?.full_name?.charAt(0).toUpperCase() }}
-              </q-avatar>
-            </div>
+  <q-page class="q-pa-md transition-all">
+    <div 
+      :class="[
+        'transition-header row justify-center',
+        searchQuery ? 'search-active' : 'search-idle'
+      ]"
+    >
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6 text-center">
+        <div v-if="!searchQuery" class="q-mb-xl animate-fade">
+          <h1 class="text-h3 text-weight-bolder text-primary google-font">
+            Mapeamento<span class="text-grey-6">Gov</span>
+          </h1>
+          <p class="text-grey-7 text-subtitle1">Pesquise por servidores, fluxos ou setores</p>
+        </div>
 
-            <div class="col-12 col-sm text-center text-sm-left">
-              <div class="text-h6 text-weight-bold">
-                {{ auth.userDetails.value?.full_name }}
-              </div>
-              <div class="text-subtitle2 text-primary">
-                {{
-                  auth.userDetails.value?.position?.name || "Cargo não definido"
-                }}
-              </div>
-              <div class="text-caption text-grey-7">
-                Matrícula: <strong>{{ auth.userId.value }}</strong>
-              </div>
-            </div>
-
-            <div class="col-12 col-sm-auto flex justify-center justify-sm-end">
-              <q-chip
-                clickable
-                color="blue-1"
-                text-color="blue-9"
-                icon="domain"
-                class="text-weight-bold department-chip"
-                @click="
-                  navigateTo(
-                    `/department/${auth.userDetails.value?.department?.uorg_code}`,
-                  )
-                "
-              >
-                <div
-                  class="ellipsis-2-lines text-wrap"
-                  style="max-width: 250px; line-height: 1.2"
-                >
-                  {{ auth.userDetails.value?.department?.name || "Geral" }}
-                </div>
-
-                <q-tooltip v-if="auth.userDetails.value?.department?.name">
-                  Ir para {{ auth.userDetails.value?.department?.name }}
-                </q-tooltip>
-              </q-chip>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-    </div>
-
-    <div class="row q-col-gutter-md q-mb-lg">
-      <div class="col-12">
         <q-input
           v-model="searchQuery"
-          filled
+          rounded
+          outlined
           bg-color="white"
-          placeholder="Pesquisar setores, servidores, processo..."
-          hint="A busca percorre nomes, fluxos, documentos e membros"
+          placeholder="O que você procura hoje?"
           debounce="500"
           clearable
+          class="google-search-bar"
         >
           <template v-slot:prepend>
             <q-icon name="search" color="primary" />
           </template>
-          <template v-slot:append v-if="pending">
-            <q-spinner color="primary" size="xs" />
+          <template v-slot:append>
+            <q-spinner v-if="pending" color="primary" size="xs" />
           </template>
         </q-input>
       </div>
     </div>
 
-    <!-- Membros encontrados -->
-    <div v-if="searchQuery && filteredMembers.length > 0" class="q-mb-lg">
-      <div class="row q-col-gutter-md q-mb-md">
-        <div class="col-12 row items-center justify-between q-mb-sm">
-          <div class="text-h6 text-grey-8">Servidores</div>
-          <q-badge color="info" outline class="q-pa-xs">
-            {{ filteredMembers.length }} resultado(s)
-          </q-badge>
-        </div>
-
-        <div
-          v-for="member in filteredMembers"
-          :key="member.id"
-          class="col-12 col-sm-6 col-md-4"
-        >
-          <q-card
-            flat
-            bordered
-            class="hover-card-member cursor-pointer full-height"
-            @click="navigateTo(`/members/profile/${member.id}`)"
-          >
-            <q-card-section>
-              <div class="row items-center no-wrap">
-                <q-avatar
-                  :text-color="getAvatarColor(member.full_name)"
-                  :color="`${getAvatarColor(member.id)}-1`"
-                  size="md"
-                >
-                  {{ member.full_name?.charAt(0).toUpperCase() }}
-                </q-avatar>
-                <div class="q-ml-md col card-content">
-                  <div class="text-weight-bold text-blue-grey-9 ">
-                    {{ member.full_name }}
-                  </div>
-                  <div class="text-caption">
-                    {{ member?.position?.name || "Cargo não definido" }}
-                  </div>
-                  <div class="text-caption text-primary q-mt-xs">
-                    {{ member?.department_id || "Sem departamento" }}
-                  </div>
-                </div>
-              </div>
-            </q-card-section>
-
-            <q-separator inset />
-
-            <q-card-section class="q-py-xs">
-              <div class="text-caption text-grey-6">
-                <q-icon name="badge" size="12px" class="q-mr-xs" />
-                Matrícula: {{ member.id.substring(0, 8).toUpperCase() }}
-              </div>
-            </q-card-section>
-          </q-card>
+    <div class="max-width-container q-mx-auto q-mt-lg">
+      
+      <div v-if="pending && !departments" class="row q-col-gutter-md">
+        <div v-for="n in 4" :key="n" class="col-12 col-sm-6 col-md-3">
+          <q-skeleton height="150px" square bordered />
         </div>
       </div>
-    </div>
 
-    <!-- Fluxos encontrados -->
-    <div v-if="searchQuery && filteredWorkflows.length > 0" class="q-mb-lg">
-      <div class="row q-col-gutter-md q-mb-md">
-        <div class="col-12 row items-center justify-between q-mb-sm">
-          <div class="text-h6 text-grey-8">Fluxos</div>
-          <q-badge color="secondary" outline class="q-pa-xs">
-            {{ filteredWorkflows.length }} resultado(s)
-          </q-badge>
-        </div>
-
-        <div
-          v-for="wf in filteredWorkflows"
-          :key="wf.id"
-          class="col-12 col-sm-6 col-md-4"
-        >
-          <q-card
-            flat
-            bordered
-            class="hover-card cursor-pointer full-height"
-            @click="navigateTo(`/workflow/${wf.id}`)"
-          >
-            <q-card-section>
-              <div class="row items-center no-wrap">
-                <q-avatar icon="device_hub" color="teal-1" text-color="teal-9" size="md" />
-                <div class="q-ml-md col card-content">
-                  <div class="text-weight-bold text-blue-grey-9 ">
-                    {{ wf.title }}
+      <div v-if="searchQuery">
+        <section v-if="filteredMembers.length > 0" class="q-mb-xl">
+          <div class="text-overline text-grey-7 q-mb-sm">Servidores Encontrados</div>
+          <div class="row q-col-gutter-md">
+            <div v-for="member in filteredMembers" :key="member.id" class="col-12 col-sm-6 col-md-4">
+              <q-card flat bordered class="hover-card-member clickable" @click="navigateTo(`/members/profile/${member.id}`)">
+                <q-card-section class="row items-center no-wrap">
+                  <q-avatar :color="`${getAvatarColor(member.id)}-1`" :text-color="getAvatarColor(member.id)">
+                    {{ member.full_name?.charAt(0).toUpperCase() }}
+                  </q-avatar>
+                  <div class="q-ml-md">
+                    <div class="text-weight-bold">{{ member.full_name }}</div>
+                    <div class="text-caption text-grey-7">{{ member.position?.name || 'Membro' }}</div>
                   </div>
-                  <div class="text-caption">
-                    {{ wf.description || wf.objectives || 'Sem descrição' }}
-                  </div>
-                  <div class="text-caption text-primary q-mt-xs">
-                    {{ wf.departmentName }}
-                  </div>
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-      </div>
-    </div>
-
-    <!-- Departamentos -->
-    <div class="row q-col-gutter-md">
-      <div class="col-12 row items-center justify-between q-mb-sm">
-        <div class="text-h6 text-grey-8">Setores</div>
-        <q-badge color="primary" outline class="q-pa-xs">
-          {{ departments?.length || 0 }} resultado(s)
-        </q-badge>
-      </div>
-
-      <template v-if="pending && !departments">
-        <div v-for="n in 8" :key="n" class="col-12 col-sm-6 col-md-3">
-          <q-card flat bordered>
-            <q-item>
-              <q-item-section avatar
-                ><q-skeleton type="QAvatar"
-              /></q-item-section>
-              <q-item-section><q-skeleton type="text" /></q-item-section>
-            </q-item>
-          </q-card>
-        </div>
-      </template>
-
-      <template v-else>
-        <div
-          v-for="dept in departments"
-          :key="dept.uorg_code"
-          class="col-12 col-sm-6 col-md-3"
-        >
-          <q-card
-            flat
-            bordered
-            class="hover-card cursor-pointer full-height"
-            @click="navigateTo(`/department/${dept.uorg_code}`)"
-          >
-            <q-card-section>
-              <div class="row items-center no-wrap">
-                <q-avatar
-                  icon="business"
-                  color="blue-1"
-                  text-color="blue-8"
-                  size="md"
-                />
-                <div class="q-ml-md">
-                  <div class="text-weight-bold text-blue-grey-9 line-height-1 ellipsis-2-lines">
-                    {{ dept.name }}
-                  </div>
-                  <div class="text-caption text-grey-7">
-                    {{ dept.initials }}
-                  </div>
-                </div>
-              </div>
-            </q-card-section>
-
-            <q-separator inset />
-
-            <q-card-section class="q-py-xs">
-              <div class="text-caption text-grey-6 row items-center">
-                <q-icon name="people" size="14px" class="q-mr-xs" />
-                {{ dept._count?.members || 0 }} membros
-                <q-icon
-                  name="account_tree"
-                  size="14px"
-                  class="q-ml-md q-mr-xs"
-                />
-                {{ dept._count?.workflows || 0 }} fluxos
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
-
-        <div
-          v-if="departments?.length === 0"
-          class="col-12 flex flex-center q-pa-xl"
-        >
-          <div class="text-center text-grey-6">
-            <q-icon name="search_off" size="64px" />
-            <div class="text-h6 q-mt-md">
-              Nenhum setor encontrado para "{{ searchQuery }}"
+                </q-card-section>
+              </q-card>
             </div>
           </div>
+        </section>
+
+        <section v-if="filteredWorkflows.length > 0" class="q-mb-xl">
+          <div class="text-overline text-grey-7 q-mb-sm">Processos e Fluxos</div>
+          <div class="row q-col-gutter-md">
+            <div v-for="wf in filteredWorkflows" :key="wf.id" class="col-12 col-sm-6 col-md-4">
+              <q-card flat bordered class="hover-card clickable" @click="navigateTo(`/workflow/${wf.id}`)">
+                <q-card-section>
+                  <div class="text-weight-bold text-primary">{{ wf.title }}</div>
+                  <div class="text-caption ellipsis-2-lines">{{ wf.description }}</div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section>
+        <div class="row items-center justify-between q-mb-md">
+          <div class="text-h6 text-grey-8">
+            {{ searchQuery ? 'Setores Filtrados' : 'Explorar Setores' }}
+          </div>
+          <q-badge v-if="departments?.length" color="grey-3" text-color="grey-9" label="">
+            {{ departments.length }} setores
+          </q-badge>
         </div>
-      </template>
+
+        <div class="row q-col-gutter-md">
+          <div v-for="dept in departments" :key="dept.uorg_code" class="col-12 col-sm-6 col-md-3">
+            <q-card flat bordered class="hover-card clickable full-height" @click="navigateTo(`/department/${dept.uorg_code}`)">
+              <q-card-section>
+                <div class="row items-center no-wrap">
+                  <q-avatar icon="business" color="blue-1" text-color="blue-8" size="md" />
+                  <div class="q-ml-md overflow-hidden">
+                    <div class="text-weight-bold text-blue-grey-9 ellipsis">{{ dept.name }}</div>
+                    <div class="text-caption text-grey-7">{{ dept.initials }}</div>
+                  </div>
+                </div>
+              </q-card-section>
+              <q-card-section class="q-py-xs text-caption text-grey-6 border-top-light">
+                <q-icon name="people" class="q-mr-xs" /> {{ dept._count?.members || 0 }}
+                <q-icon name="account_tree" class="q-ml-md q-mr-xs" /> {{ dept._count?.workflows || 0 }}
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </section>
     </div>
   </q-page>
 </template>
 
 <script setup>
-const auth = useAuth();
 const searchQuery = ref("");
 
+// Correção: Desestruturar pending corretamente do useFetch
 const { data: departments, pending } = await useFetch("/api/departments", {
   query: { search: searchQuery },
   watch: [searchQuery],
 });
 
+// Computeds com proteções de erro (?. e fallback para arrays vazios)
 const filteredMembers = computed(() => {
   if (!departments.value || !searchQuery.value) return [];
-
   const members = new Map();
+  const s = searchQuery.value.toLowerCase();
 
   departments.value.forEach((dept) => {
-    if (dept.members && Array.isArray(dept.members)) {
-      dept.members.forEach((member) => {
-        const searchLower = searchQuery.value.toLowerCase();
-        if (
-          member.full_name?.toLowerCase().includes(searchLower) ||
-          member.position?.name?.toLowerCase().includes(searchLower)
-        ) {
-          if (!members.has(member.id)) {
-            members.set(member.id, member);
-          }
-        }
-      });
-    }
+    dept.members?.forEach((m) => {
+      if (m.full_name?.toLowerCase().includes(s) || m.position?.name?.toLowerCase().includes(s)) {
+        if (!members.has(m.id)) members.set(m.id, m);
+      }
+    });
   });
-
   return Array.from(members.values());
 });
 
 const filteredWorkflows = computed(() => {
   if (!departments.value || !searchQuery.value) return [];
-  const map = new Map();
+  const workflows = [];
   const s = searchQuery.value.toLowerCase();
+
   departments.value.forEach((dept) => {
-    if (dept.workflows && Array.isArray(dept.workflows)) {
-      dept.workflows.forEach((wf) => {
-        if (
-          (wf.title && wf.title.toLowerCase().includes(s)) ||
-          (wf.description && wf.description.toLowerCase().includes(s)) ||
-          (wf.objectives && wf.objectives.toLowerCase().includes(s))
-        ) {
-          if (!map.has(wf.id)) {
-            map.set(wf.id, { ...wf, departmentName: dept.name, departmentId: dept.uorg_code });
-          }
-        }
-      });
-    }
+    dept.workflows?.forEach((wf) => {
+      if (wf.title?.toLowerCase().includes(s) || wf.description?.toLowerCase().includes(s)) {
+        workflows.push(wf);
+      }
+    });
   });
-  return Array.from(map.values());
+  return workflows;
 });
 
 const getAvatarColor = (id) => {
   const colors = ["blue", "teal", "green", "purple", "orange", "red", "cyan"];
-  const hash = id.charCodeAt(0) + id.charCodeAt(id.length - 1);
-  return colors[hash % colors.length];
+  const charCode = id?.toString().charCodeAt(0) || 0;
+  return colors[charCode % colors.length];
 };
 </script>
 
-<style scoped>
-.hover-card,
-.hover-card-member {
-  transition: all 0.3s ease;
+<style lang="scss" scoped>
+.transition-header {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Estado Inicial (Google Style)
+.search-idle {
+  padding-top: 12vh;
+  padding-bottom: 5vh;
+}
+
+// Estado com Busca Ativa
+.search-active {
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+}
+
+.google-search-bar {
+  max-width: 600px;
+  margin: 0 auto;
+  transition: transform 0.3s;
+  
+  &:focus-within {
+    transform: translateY(-2px);
+    :deep(.q-field__control) {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+  }
+}
+
+.google-font {
+  font-family: 'Product Sans', 'Roboto', sans-serif;
+  letter-spacing: -1.5px;
+}
+
+.max-width-container {
+  max-width: 1200px;
+}
+
+.hover-card, .hover-card-member {
+  transition: all 0.2s ease-in-out;
   border-radius: 12px;
-}
-.hover-card:hover,
-.hover-card-member:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-  border-color: var(--q-primary);
-}
-.line-height-1 {
-  line-height: 1.1;
-  margin-bottom: 2px;
-}
-.department-chip {
-  height: auto !important;
-  padding: 8px 12px;
-  transition:
-    transform 0.2s,
-    background-color 0.2s;
+  
+  &.clickable:hover {
+    cursor: pointer;
+    border-color: var(--q-primary);
+    background: #fdfdfd;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05) !important;
+  }
 }
 
-.department-chip:hover {
-  background-color: #e3f2fd !important;
-  transform: scale(1.02);
+.border-top-light {
+  border-top: 1px solid rgba(0,0,0,0.03);
 }
 
-.text-wrap {
-  white-space: normal;
-  word-wrap: break-word;
+.animate-fade {
+  animation: fadeIn 0.8s ease-out;
 }
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* permite truncamento com 2 linhas */
 .ellipsis-2-lines {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
-  word-break: break-word;
-}
-
-/* garante que colunas internas em flex possam encolher e permitir truncamento */
-.card-content {
-  min-width: 0;
-}
-
-/* maior distribuição em telas grandes */
-.col-12.col-sm-6.col-md-4.col-lg-3 {
-  /* deixado para possíveis futuras classes; uso de col-lg via template se necessário */
 }
 </style>

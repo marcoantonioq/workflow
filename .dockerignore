@@ -24,3 +24,6 @@ tests/
 vitest.config.*
 .vscode/
 .idea/
+
+node_modules/
+dist/

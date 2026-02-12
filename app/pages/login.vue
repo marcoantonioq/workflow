@@ -28,6 +28,15 @@
           unelevated
           :loading="loading"
           @click="doLogin"
+          :disable="matricula === '' || loading"
+        />
+        <q-btn 
+          label="Voltar" 
+          flat 
+          color="grey-9" 
+          class="full-width q-mt-sm" 
+          to="/"
+          :disable="loading"
         />
       </q-card-actions>
     </q-card>

@@ -5,12 +5,11 @@ RUN apk add --no-cache postgresql-client
 FROM base AS deps
 RUN mkdir -p /app
 WORKDIR /app
-COPY package*.json ./
-RUN chown -R node:node /app
-RUN npm install
 
 # Estágio de Build (Produção)
 FROM deps AS builder
+COPY package*.json ./
+RUN npm install
 COPY . .
 RUN npx prisma generate
 RUN npm run build
