@@ -26,7 +26,6 @@ model User {
   department_id String?
   department    Department? @relation(fields: [department_id], references: [uorg_code])
 
-  // Alterado para refletir a relação com o campo 'name' da Position
   position_id String?
   position    Position? @relation(fields: [position_id], references: [name])
 
