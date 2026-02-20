@@ -21,9 +21,11 @@ ENV NODE_ENV=production
 COPY --from=builder /app/.output /app/.output
 COPY --from=builder /app/prisma /app/prisma
 COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 RUN npm install --only=production
 USER root
 RUN chown -R node:node /app
 USER node
 EXPOSE 3000
-CMD ["node", ".output/server/index.mjs"]
+CMD ["/app/start.sh"]

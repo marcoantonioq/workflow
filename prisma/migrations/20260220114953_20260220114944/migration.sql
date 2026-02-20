@@ -13,7 +13,7 @@ CREATE TABLE "users" (
     "photo_url" TEXT,
     "dt_exercicio" TIMESTAMP(3),
     "service_hours" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "department_id" TEXT,
     "position_id" TEXT,
 
@@ -31,8 +31,8 @@ CREATE TABLE "workflows" (
     "sort_order" INTEGER NOT NULL DEFAULT 0,
     "user_id" TEXT NOT NULL,
     "department_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
     CONSTRAINT "workflows_pkey" PRIMARY KEY ("id")
 );
@@ -50,8 +50,8 @@ CREATE TABLE "departments" (
     "service_hours" TEXT,
     "faq" JSONB DEFAULT '[]',
     "documents" JSONB DEFAULT '[]',
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
     CONSTRAINT "departments_pkey" PRIMARY KEY ("uorg_code")
 );
@@ -62,8 +62,8 @@ CREATE TABLE "positions" (
     "occupied_positions" INTEGER NOT NULL DEFAULT 0,
     "summary" TEXT,
     "activities" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
     CONSTRAINT "positions_pkey" PRIMARY KEY ("name")
 );

@@ -1,12 +1,12 @@
 generator client {
-  provider        = "prisma-client-js"
-  binaryTargets   = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   extensions = [unaccent]
 }
 
@@ -15,18 +15,20 @@ model User {
   full_name      String
   email          String?   @unique
   phone          String?
-  access_role    String?
-  is_active      Boolean   @default(true)
+  access_rule    String?
+  role           String?
+  main_activities String?
   workstation    String?
+  pgd            String?
   photo_url      String?
   dt_exercicio   DateTime?
   service_hours  String?
   created_at     DateTime?  @default(now())
+  is_active      Boolean   @default(true)
 
   department_id String?
   department    Department? @relation(fields: [department_id], references: [uorg_code])
 
-  // Alterado para refletir a relação com o campo 'name' da Position
   position_id String?
   position    Position? @relation(fields: [position_id], references: [name])
 
