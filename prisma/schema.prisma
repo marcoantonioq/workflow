@@ -11,23 +11,24 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  full_name   String
-  email       String?  @unique
-  phone       String?
-  access_role String?
-  is_active   Boolean  @default(true)
-  workstation String?
-  photo_url   String?
-  dt_exercicio  DateTime?
-  service_hours    String?
-  created_at  DateTime @default(now())
+  id             String    @id @default(uuid())
+  full_name      String
+  email          String?   @unique
+  phone          String?
+  access_role    String?
+  is_active      Boolean   @default(true)
+  workstation    String?
+  photo_url      String?
+  dt_exercicio   DateTime?
+  service_hours  String?
+  created_at     DateTime?  @default(now())
 
   department_id String?
   department    Department? @relation(fields: [department_id], references: [uorg_code])
 
+  // Alterado para refletir a relação com o campo 'name' da Position
   position_id String?
-  position    Position? @relation(fields: [position_id], references: [id])
+  position    Position? @relation(fields: [position_id], references: [name])
 
   workflows Workflow[]
 
@@ -39,18 +40,18 @@ model Workflow {
   title       String
   description String?
   objectives  String?
-  documents   Json?    @default("[]")
-  structure   Json?    @default("[]")
+  documents   Json?   @default("[]")
+  structure   Json?   @default("[]")
   sort_order  Int     @default(0)
 
   user_id String
   author  User   @relation(fields: [user_id], references: [id])
 
   department_id String
-  department  Department  @relation(fields: [department_id], references: [uorg_code])
+  department    Department @relation(fields: [department_id], references: [uorg_code])
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
 
   @@index([title])
   @@map("workflows")
@@ -66,32 +67,31 @@ model Department {
   responsibilities String?
   competencies     String?
   service_hours    String?
-  faq              Json?    @default("[]")
-  documents        Json?    @default("[]")
+  faq              Json?   @default("[]")
+  documents        Json?   @default("[]")
 
-  members User[]
+  members   User[]
   workflows Workflow[]
 
-  parent           Department?  @relation("DepartmentHierarchy", fields: [parent_code], references: [uorg_code])
-  children         Department[] @relation("DepartmentHierarchy")
+  parent   Department?  @relation("DepartmentHierarchy", fields: [parent_code], references: [uorg_code])
+  children Department[] @relation("DepartmentHierarchy")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
 
   @@map("departments")
 }
 
 model Position {
-  id                 String  @id @default(uuid())
-  name               String
+  name               String  @id
   occupied_positions Int     @default(0)
   summary            String?
   activities         String?
 
   members User[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
 
   @@map("positions")
 }
