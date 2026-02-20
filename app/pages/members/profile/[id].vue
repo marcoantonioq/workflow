@@ -64,9 +64,10 @@
 
           <q-card-section class="q-pa-md">
             <div class="info-group q-mb-md">
-              <div class="text-overline text-grey-6 q-mb-xs">Lotação e Local</div>
-              <div class="row items-center q-mb-sm">
+              <div class="text-overline text-grey-6 q-mb-xs">
                 <q-icon name="business" color="primary" size="20px" class="q-mr-md" />
+                Lotação e Local</div>
+              <div class="row items-center q-mb-sm">
                 <div>
                   <div class="text-weight-bold text-grey-9">{{ member.department?.name || member.department_id }}</div>
                   <div class="text-caption text-grey-7">{{ member.workstation || 'Campus Cidade de Goiás' }}</div>
@@ -75,14 +76,13 @@
             </div>
 
             <div class="info-group q-mb-md">
-              <div class="text-overline text-grey-6 q-mb-xs">Expediente</div>
+              <div class="text-overline text-grey-6 q-mb-xs">
+                <q-icon name="schedule" color="orange-8" size="20px" class="q-mr-md q-mt-xs" /> Expediente</div>
               <div class="row items-start q-mb-sm">
-                <q-icon name="schedule" color="orange-8" size="20px" class="q-mr-md q-mt-xs" />
                 <div>
-                  <div class="text-body2 text-grey-9 text-weight-medium">
+                  <div class="text-body2 text-grey-9 text-weight-medium whitespace-pre-wrap line-height-1-4">
                     {{ member.service_hours || 'Horário institucional' }}
                   </div>
-                  <div class="text-caption text-grey-6">Jornada de Atendimento</div>
                 </div>
               </div>
               
@@ -94,14 +94,6 @@
                   </div>
                   <div class="text-caption text-grey-6">Início em Exercício</div>
                 </div>
-              </div>
-            </div>
-
-            <div class="info-group">
-              <div class="text-overline text-grey-6 q-mb-xs">Identificação Sistema</div>
-              <div class="row items-center">
-                <q-icon name="fingerprint" color="grey-7" size="20px" class="q-mr-md" />
-                <div class="text-body2 text-mono text-grey-8">{{ member.id }}</div>
               </div>
             </div>
           </q-card-section>
@@ -209,7 +201,7 @@ const memberId = route.params.id;
 const { data: member, pending } = await useFetch(`/api/members/${memberId}`);
 
 /**
- * Converte asteriscos em lista HTML e limpa espaços extras
+ * Converte asteriscos em lista HTML
  */
 const formatActivities = (text) => {
   if (!text) return '';
@@ -226,17 +218,11 @@ const formatActivities = (text) => {
 };
 
 /**
- * Handlers com Ação Dupla (Copiar + Abrir)
+ * Handlers de Contato (Copy + Open New Tab)
  */
 const handleEmailClick = (email) => {
   copyToClipboard(email).then(() => {
-    $q.notify({
-      message: 'E-mail copiado!',
-      color: 'blue-8',
-      icon: 'content_paste',
-      position: 'bottom',
-      timeout: 1500
-    });
+    $q.notify({ message: 'E-mail copiado!', color: 'blue-8', icon: 'content_paste', position: 'bottom', timeout: 1500 });
     window.open(`mailto:${email}`, '_blank');
   });
 };
@@ -245,19 +231,13 @@ const handlePhoneClick = (phone) => {
   const cleanPhone = phone.replace(/\D/g, '');
   const phoneWithCountry = cleanPhone.length <= 11 ? `55${cleanPhone}` : cleanPhone;
   copyToClipboard(phone).then(() => {
-    $q.notify({
-      message: 'Telefone copiado!',
-      color: 'green-8',
-      icon: 'whatsapp',
-      position: 'bottom',
-      timeout: 1500
-    });
+    $q.notify({ message: 'Telefone copiado!', color: 'green-8', icon: 'whatsapp', position: 'bottom', timeout: 1500 });
     window.open(`https://api.whatsapp.com/send?phone=${phoneWithCountry}`, '_blank');
   });
 };
 
 /**
- * Helpers de UI
+ * UI Helpers
  */
 const getAvatarColor = (id) => {
   if (!id) return "grey-5";
@@ -268,11 +248,7 @@ const getAvatarColor = (id) => {
 
 const formatDate = (date) => {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  return new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 };
 
 const formatDateShort = (date) => {
@@ -306,6 +282,14 @@ const formatDateShort = (date) => {
 .activities-container {
   line-height: 1.7;
   font-size: 1.05rem;
+}
+
+.whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
+.line-height-1-4 {
+  line-height: 1.4;
 }
 
 :deep(.custom-list) {
