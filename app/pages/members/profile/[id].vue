@@ -55,7 +55,7 @@
               <q-chip v-if="member.pgd && !member.pgd.includes('Não')" 
                       color="deep-purple-1" text-color="deep-purple-9" 
                       size="sm" icon="laptop_mac" class="text-weight-bold">
-                PGD: {{ member.pgd }}
+                {{ member.pgd }}
               </q-chip>
             </div>
           </q-card-section>
@@ -112,7 +112,7 @@
         <q-card flat class="border-radius-16 shadow-1 q-mb-md">
           <q-card-section class="bg-white row items-center">
             <q-icon name="description" color="primary" size="sm" class="q-mr-sm" />
-            <div class="text-h6 text-weight-bold text-grey-9">Atribuições e Atividades</div>
+            <div class="text-h6 text-weight-bold text-grey-9">Principais Atribuições e Atividades</div>
           </q-card-section>
           
           <q-card-section class="q-pt-none">
