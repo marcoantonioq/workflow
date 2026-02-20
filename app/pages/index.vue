@@ -55,7 +55,7 @@
           <div
             v-for="dept in departments"
             :key="dept.uorg_code"
-            class="col-12 col-sm-6 col-md-4 col-lg-3"
+            class="col-12 col-sm-6 col-md-4 col-lg-3 cursor-pointer animate-fade"
           >
             <DepartmentCard :dept="dept" :search-query="searchQuery" />
           </div>
@@ -78,10 +78,8 @@
 <script setup>
 const searchQuery = ref("");
 
-// Nuxt 4 useFetch com auto-watch
 const { data: departments, pending } = await useFetch("/api/departments", {
   query: { search: searchQuery },
-  // O Nuxt 4 re-executa automaticamente quando searchQuery (ref) muda devido ao debounce do q-input
 });
 </script>
 
