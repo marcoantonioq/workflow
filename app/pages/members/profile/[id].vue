@@ -33,15 +33,21 @@
     <div v-else-if="member" class="row q-col-gutter-md">
       <div class="col-12 col-md-4">
         <q-card flat class="border-radius-16 shadow-1 sticky-card">
-          <q-card-section class="text-center q-pa-xl">
-            <q-avatar size="140px" class="shadow-3 q-mb-md">
+          <q-card-section 
+            class="text-center q-pa-xl cursor-pointer member-header-link" 
+            @click="openSuapProfile"
+          >
+            <q-avatar size="140px" class="shadow-3 q-mb-md profile-avatar">
               <img v-if="member.photo_url" :src="member.photo_url">
               <div v-else :class="`bg-${getAvatarColor(member.id)} text-white full-width full-height flex flex-center text-h3`">
                 {{ member.full_name?.charAt(0).toUpperCase() }}
               </div>
+              <q-badge floating color="primary" class="q-pa-xs">
+                <q-icon name="open_in_new" size="12px" />
+              </q-badge>
             </q-avatar>
 
-            <div class="text-h5 text-weight-bold text-grey-9">{{ member.full_name }}</div>
+            <div class="text-h5 text-weight-bold text-grey-9 member-name">{{ member.full_name }}</div>
             <div class="text-subtitle1 text-primary text-weight-medium q-mt-xs">
               {{ member.position?.name || member.position_id || "Cargo não definido" }}
             </div>
@@ -58,6 +64,7 @@
                 {{ member.pgd }}
               </q-chip>
             </div>
+            <q-tooltip class="bg-primary">Ver perfil completo no SUAP</q-tooltip>
           </q-card-section>
 
           <q-separator inset />
@@ -65,10 +72,10 @@
           <q-card-section class="q-pa-md">
             <div class="info-group q-mb-md">
               <div class="text-overline text-grey-6 q-mb-xs">
-                <q-icon name="business" color="primary" size="20px" class="q-mr-md" />
-                Lotação e Local</div>
+                <q-icon name="business" color="primary" size="20px" class="q-mr-xs" /> Lotação e Local
+              </div>
               <div class="row items-center q-mb-sm">
-                <div>
+                <div class="q-pl-lg">
                   <div class="text-weight-bold text-grey-9">{{ member.department?.name || member.department_id }}</div>
                   <div class="text-caption text-grey-7">{{ member.workstation || 'Campus Cidade de Goiás' }}</div>
                 </div>
@@ -77,18 +84,19 @@
 
             <div class="info-group q-mb-md">
               <div class="text-overline text-grey-6 q-mb-xs">
-                <q-icon name="schedule" color="orange-8" size="20px" class="q-mr-md q-mt-xs" /> Expediente</div>
+                <q-icon name="schedule" color="orange-8" size="20px" class="q-mr-xs" /> Expediente
+              </div>
               <div class="row items-start q-mb-sm">
-                <div>
+                <div class="q-pl-lg">
                   <div class="text-body2 text-grey-9 text-weight-medium whitespace-pre-wrap line-height-1-4">
                     {{ member.service_hours || 'Horário institucional' }}
                   </div>
                 </div>
               </div>
               
-              <div v-if="member.dt_exercicio" class="row items-center">
-                <q-icon name="event_available" color="green-7" size="20px" class="q-mr-md" />
-                <div>
+              <div v-if="member.dt_exercicio" class="row items-center q-mt-sm">
+                <q-icon name="event_available" color="green-7" size="20px" class="q-mr-xs" />
+                <div class="q-pl-sm">
                   <div class="text-body2 text-grey-9 text-weight-medium">
                     {{ formatDate(member.dt_exercicio) }}
                   </div>
@@ -114,7 +122,7 @@
               v-html="formatActivities(member.main_activities)"
             ></div>
             <div v-else class="text-italic text-grey-6 q-pa-lg text-center">
-              Nenhuma atividade detalhada cadastrada para este membro.
+              Nenhuma atividade detalhada cadastrada.
             </div>
             
             <div v-if="member.role || member.access_rule" class="row q-gutter-sm q-mt-md q-px-sm">
@@ -136,40 +144,22 @@
           </q-card-section>
           
           <q-list class="q-px-sm q-pb-md">
-            <q-item 
-              v-if="member.email"
-              clickable 
-              @click="handleEmailClick(member.email)"
-              class="q-py-md text-link border-radius-12 q-mb-sm"
-            >
-              <q-item-section avatar>
-                <q-avatar color="blue-1" text-color="blue-9" icon="alternate_email" />
-              </q-item-section>
+            <q-item v-if="member.email" clickable @click="handleEmailClick(member.email)" class="q-py-md text-link border-radius-12 q-mb-sm">
+              <q-item-section avatar><q-avatar color="blue-1" text-color="blue-9" icon="alternate_email" /></q-item-section>
               <q-item-section>
                 <q-item-label caption>E-mail Institucional</q-item-label>
                 <q-item-label class="text-weight-medium text-primary">{{ member.email }}</q-item-label>
               </q-item-section>
-              <q-item-section side>
-                <q-btn flat round color="blue-3" icon="content_copy" size="sm" />
-              </q-item-section>
+              <q-item-section side><q-btn flat round color="blue-3" icon="content_copy" size="sm" /></q-item-section>
             </q-item>
 
-            <q-item 
-              v-if="member.phone"
-              clickable 
-              @click="handlePhoneClick(member.phone)"
-              class="q-py-md text-link border-radius-12"
-            >
-              <q-item-section avatar>
-                <q-avatar color="green-1" text-color="green-9" icon="chat" />
-              </q-item-section>
+            <q-item v-if="member.phone" clickable @click="handlePhoneClick(member.phone)" class="q-py-md text-link border-radius-12">
+              <q-item-section avatar><q-avatar color="green-1" text-color="green-9" icon="chat" /></q-item-section>
               <q-item-section>
                 <q-item-label caption>WhatsApp / Telefone</q-item-label>
                 <q-item-label class="text-weight-medium text-green-9">{{ member.phone }}</q-item-label>
               </q-item-section>
-              <q-item-section side>
-                <q-btn flat round color="green-3" icon="content_copy" size="sm" />
-              </q-item-section>
+              <q-item-section side><q-btn flat round color="green-3" icon="content_copy" size="sm" /></q-item-section>
             </q-item>
           </q-list>
         </q-card>
@@ -179,13 +169,7 @@
     <div v-else class="column flex-center q-pa-xl">
       <q-icon name="person_search" size="100px" color="grey-4" />
       <div class="text-h5 text-grey-6 q-mt-md">Membro não localizado</div>
-      <q-btn 
-        outline 
-        color="primary" 
-        label="Retornar à listagem" 
-        class="q-mt-lg border-radius-8" 
-        @click="router.push('/members')" 
-      />
+      <q-btn outline color="primary" label="Retornar à listagem" class="q-mt-lg border-radius-8" @click="router.push('/members')" />
     </div>
   </q-page>
 </template>
@@ -199,6 +183,15 @@ const router = useRouter();
 const memberId = route.params.id;
 
 const { data: member, pending } = await useFetch(`/api/members/${memberId}`);
+
+/**
+ * Abre o perfil no SUAP
+ */
+const openSuapProfile = () => {
+  if (member.value?.id) {
+    window.open(`https://suap.ifg.edu.br/rh/servidor/${member.value.id}`, '_blank');
+  }
+};
 
 /**
  * Converte asteriscos em lista HTML
@@ -217,9 +210,6 @@ const formatActivities = (text) => {
   return text.replace(/\n/g, '<br>');
 };
 
-/**
- * Handlers de Contato (Copy + Open New Tab)
- */
 const handleEmailClick = (email) => {
   copyToClipboard(email).then(() => {
     $q.notify({ message: 'E-mail copiado!', color: 'blue-8', icon: 'content_paste', position: 'bottom', timeout: 1500 });
@@ -236,9 +226,6 @@ const handlePhoneClick = (phone) => {
   });
 };
 
-/**
- * UI Helpers
- */
 const getAvatarColor = (id) => {
   if (!id) return "grey-5";
   const palette = ["blue-7", "indigo-7", "teal-7", "deep-purple-7", "green-7", "orange-8", "cyan-8"];
@@ -270,13 +257,27 @@ const formatDateShort = (date) => {
   top: 24px;
 }
 
+/* Efeito de Link no Cabeçalho */
+.member-header-link {
+  transition: background-color 0.3s;
+}
+.member-header-link:hover {
+  background-color: rgba(25, 118, 210, 0.04);
+}
+.member-header-link:hover .member-name {
+  color: var(--q-primary) !important;
+  text-decoration: underline;
+}
+.profile-avatar {
+  transition: transform 0.3s;
+}
+.member-header-link:hover .profile-avatar {
+  transform: scale(1.03);
+}
+
 .text-mono {
   font-family: 'Fira Code', monospace;
   font-size: 0.85rem;
-}
-
-.info-group {
-  padding: 8px 4px;
 }
 
 .activities-container {
@@ -284,20 +285,14 @@ const formatDateShort = (date) => {
   font-size: 1.05rem;
 }
 
-.whitespace-pre-wrap {
-  white-space: pre-wrap;
-}
-
-.line-height-1-4 {
-  line-height: 1.4;
-}
+.whitespace-pre-wrap { white-space: pre-wrap; }
+.line-height-1-4 { line-height: 1.4; }
 
 :deep(.custom-list) {
   margin: 0;
   padding-left: 1.2rem;
   list-style-type: disc;
 }
-
 :deep(.custom-list li) {
   margin-bottom: 10px;
   color: #424242;
@@ -306,7 +301,6 @@ const formatDateShort = (date) => {
 .text-link {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-
 .text-link:hover {
   background: white;
   transform: translateY(-2px);

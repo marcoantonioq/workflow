@@ -11,9 +11,6 @@
           <h1 class="text-h3 text-weight-bolder text-primary google-font">
             Mapeamento<span class="text-grey-6">IFG</span>
           </h1>
-          <p class="text-grey-7 text-subtitle1">
-            Pesquise por servidores, fluxos ou setores
-          </p>
         </div>
 
         <q-input
@@ -21,7 +18,7 @@
           rounded
           outlined
           bg-color="white"
-          placeholder="O que você procura hoje?"
+          placeholder="Pesquise por servidores, fluxos ou setores"
           debounce="500"
           clearable
           class="google-search-bar"
@@ -44,7 +41,7 @@
       <section v-if="departments?.length">
         <div class="row items-center justify-between q-mb-md">
           <div class="text-h6 text-grey-8">
-            {{ searchQuery ? "Resultados Encontrados" : "Explorar Setores" }}
+            {{ searchQuery ? "Resultados Encontrados" : "Explorar por:" }}
           </div>
           <q-badge color="grey-3" text-color="grey-9">
             {{ departments.length }} setores
