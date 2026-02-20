@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "dev": "npm install && npm run db:generate && npx nuxt dev",
+    "dev": "npm install && npm run db:generate && npm run db:migrate && npm run db:seed && npx nuxt dev",
     "start": "node .output/server/index.mjs",
     "generate": "npx nuxt generate",
     "preview": "npx nuxt preview",
