@@ -15,13 +15,16 @@ model User {
   full_name      String
   email          String?   @unique
   phone          String?
-  access_role    String?
-  is_active      Boolean   @default(true)
+  access_rule    String?
+  role           String?
+  main_activities String?
   workstation    String?
+  pgd            String?
   photo_url      String?
   dt_exercicio   DateTime?
   service_hours  String?
   created_at     DateTime?  @default(now())
+  is_active      Boolean   @default(true)
 
   department_id String?
   department    Department? @relation(fields: [department_id], references: [uorg_code])

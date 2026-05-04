@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-workflow}
     volumes:
       - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
     ports:
       - "5432:5432"
     healthcheck:
@@ -25,6 +26,7 @@ services:
     command: npm run dev
     volumes:
       - .:/app 
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:

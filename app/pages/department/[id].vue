@@ -1,15 +1,9 @@
 <template>
+  <voltar class="self-start q-pa-md" />
   <q-page class="q-pa-lg bg-grey-1">
     <div class="column q-mb-xl">
-      <q-btn
-        flat
-        dense
-        color="primary"
-        icon="arrow_back"
-        label="Voltar"
-        @click="router.back()"
-        class="self-start q-mb-md"
-      />
+
+      
 
       <template v-if="department">
         <div class="row items-end q-gutter-x-md">
@@ -372,6 +366,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useQuasar } from "quasar";
+import Voltar from "../../components/layout/Voltar.vue";
 
 const route = useRoute();
 const router = useRouter();

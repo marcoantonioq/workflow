@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-workflow}
     volumes:
       - db_data:/var/lib/postgresql/data
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s

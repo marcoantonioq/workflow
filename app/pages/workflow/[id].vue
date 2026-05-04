@@ -1,15 +1,7 @@
 <template>
   <q-page class="q-pa-md q-pa-sm-xl bg-grey-1">
     <div class="q-mb-xl">
-      <q-btn
-        flat
-        no-caps
-        color="primary"
-        icon="arrow_back"
-        label="Voltar"
-        class="hover-accent rounded-borders"
-        @click="goBack"
-      />
+      <voltar class="self-start q-pa-md" />
     </div>
 
     <div v-if="pending" class="flex flex-center q-pa-xl column">
@@ -275,6 +267,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import Voltar from "../../components/layout/Voltar.vue";
 
 const route = useRoute();
 const router = useRouter();
